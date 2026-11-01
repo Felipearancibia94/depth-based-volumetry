@@ -136,15 +136,31 @@ class ElevatedRule:
 
 @dataclass
 class StationaryRule:
+    """Track still for ``min_s``. Stillness inside zones tagged ``exclude_zone_tags`` (e.g.
+    the food bowl) is left to the zone rules, which explain it better."""
+
     name: str
     hypothesis: str
     min_s: float
     radius_m: float
     radius_bl: float
+    scene: SceneCalibration | None = None
+    exclude_zone_tags: tuple[str, ...] = ()
+
+    def _excluded(self, obs: TrackObservation) -> bool:
+        if self.scene is None or not self.exclude_zone_tags:
+            return False
+        for name in obs.spatial.zones:
+            zone = self.scene.zone(name)
+            if zone is not None and set(zone.tags) & set(self.exclude_zone_tags):
+                return True
+        return False
 
     def evaluate(self, now_s, observations, histories):
         hits = []
         for obs in observations:
+            if self._excluded(obs):
+                continue
             dur = stationary_duration_s(histories[obs.track_id], self.radius_m, self.radius_bl)
             if dur >= self.min_s:
                 facts = {**_base_facts(obs), "duration_s": round(dur, 1)}
@@ -238,6 +254,8 @@ def default_rules(config: RulesConfig, scene: SceneCalibration) -> list[Rule]:
             config.stationary_s,
             config.stationary_radius_m,
             config.stationary_radius_bl,
+            scene,
+            tuple(config.dwell_tags),
         ),
         StationaryRule(
             "long_inactivity",

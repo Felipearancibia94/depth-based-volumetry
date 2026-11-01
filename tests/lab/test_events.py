@@ -116,6 +116,8 @@ def test_speed_burst_and_stationary_rules():
     assert _run(run, [[obs(t / 10, x_m=t * 0.05)] for t in range(15)]) == []
     still = StationaryRule("stationary", "resting_or_sleeping", 30, 0.15, 0.3)
     assert _run(still, [[obs(t)] for t in range(31)])[0].facts["duration_s"] == 30
+    in_bowl = StationaryRule("stationary", "resting", 30, 0.15, 0.3, SCENE, ("food",))
+    assert _run(in_bowl, [[obs(t, zones=("bowl",))] for t in range(31)]) == []
 
 
 def test_proximity_rule_pairs_and_resets():
