@@ -28,6 +28,7 @@ match_iou = 0.3
 low_match_iou = 0.5
 min_hits = 3
 max_lost_s = 2.0
+max_center_shift = 1.0
 
 [spatial]
 box_shrink = 0.2

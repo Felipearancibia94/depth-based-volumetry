@@ -58,6 +58,7 @@ class TrackerConfig:
     low_match_iou: float = 0.5
     min_hits: int = 3
     max_lost_s: float = 2.0
+    max_center_shift: float = 1.0  # last-resort match: centre shift / box diagonal, same label
 
 
 @dataclass(frozen=True)

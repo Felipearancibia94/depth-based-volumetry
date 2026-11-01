@@ -162,3 +162,20 @@ def test_draw_observations_marks_pixels():
     zone = Zone("bowl", ((100, 100), (200, 100), (200, 200)), ("restricted",))
     canvas = draw_observations(np.zeros((240, 320, 3), np.uint8), [obs], [zone])
     assert canvas[20, 30].any() and canvas[100, 150].any()
+
+
+def test_tracker_follows_fast_motion_without_overlap():
+    """At low frame rates a jump can leave no IoU with the prediction."""
+    tracker = Tracker(TrackerConfig(min_hits=2))
+    for i in range(3):
+        tracker.update([_det(100, 100)], i * 0.2)
+    (track,) = tracker.update([_det(100, 100)], 0.6)
+    (moved,) = tracker.update([_det(140, 60)], 0.8)  # IoU 0 with the previous box
+    assert moved.track_id == track.track_id
+
+
+def test_centre_matching_never_crosses_labels():
+    tracker = Tracker(TrackerConfig(min_hits=1))
+    (cat,) = tracker.update([_det(100, 100, "cat")], 0.0)
+    (dog,) = tracker.update([_det(140, 60, "dog")], 0.2)
+    assert dog.track_id != cat.track_id

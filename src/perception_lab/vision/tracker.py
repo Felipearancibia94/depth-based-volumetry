@@ -33,7 +33,7 @@ class KalmanBox:
         F[:4, 4:] = np.eye(4) * dt_s
         size = max(self.x[2], self.x[3], 1.0)
         q = (0.05 * size) ** 2 * max(dt_s, 1e-3)
-        Q = np.diag([q, q, q, q, 4 * q, 4 * q, q, q])
+        Q = np.diag([q, q, q, q, 25 * q, 25 * q, q, q])  # velocity adapts within a few frames
         self.x = F @ self.x
         self.x[2:4] = np.maximum(self.x[2:4], 1.0)
         self.P = F @ self.P @ F.T + Q
@@ -119,6 +119,17 @@ class Tracker:
         for ti, di in low_matches:
             self._apply(self.tracks[remaining[ti]], low[di], timestamp_s)
 
+        # Fast motion at low frame rates can leave no overlap with the prediction: match the
+        # leftovers of the same class by centre distance relative to box size.
+        leftover = [i for i in remaining if not self.tracks[i].updated and self.tracks[i].confirmed]
+        free_high = [high[di] for di in unmatched_high]
+        shift_matches, still_free = _center_match(
+            [self.tracks[i] for i in leftover], free_high, cfg.max_center_shift
+        )
+        for ti, di in shift_matches:
+            self._apply(self.tracks[leftover[ti]], free_high[di], timestamp_s)
+        unmatched_high = [unmatched_high[i] for i in still_free]
+
         for di in unmatched_high:
             d = high[di]
             track = Track(self._next_id, KalmanBox(d.box_xyxy), d.score, timestamp_s)
@@ -145,6 +156,36 @@ class Tracker:
         track.vote(detection.label, detection.score)
         if track.hits >= self.config.min_hits:
             track.confirmed = True
+
+
+def _center_match(
+    tracks: Sequence[Track], detections: Sequence[Detection], max_shift: float
+) -> tuple[list[tuple[int, int]], list[int]]:
+    """Greedy nearest-centre assignment between same-label pairs, gated by
+    ``distance / max(box diagonal) <= max_shift``."""
+    pairs = []
+    for ti, track in enumerate(tracks):
+        tb = track.kalman.box
+        for di, d in enumerate(detections):
+            if d.label != track.label:
+                continue
+            db = d.box_xyxy
+            dist = np.hypot(
+                (tb[0] + tb[2] - db[0] - db[2]) / 2, (tb[1] + tb[3] - db[1] - db[3]) / 2
+            )
+            diag = max(
+                np.hypot(tb[2] - tb[0], tb[3] - tb[1]), np.hypot(db[2] - db[0], db[3] - db[1])
+            )
+            if diag > 0 and dist / diag <= max_shift:
+                pairs.append((dist / diag, ti, di))
+    pairs.sort()
+    used_t, used_d, matches = set(), set(), []
+    for _, ti, di in pairs:
+        if ti not in used_t and di not in used_d:
+            used_t.add(ti)
+            used_d.add(di)
+            matches.append((ti, di))
+    return matches, [i for i in range(len(detections)) if i not in used_d]
 
 
 def _greedy_match(
