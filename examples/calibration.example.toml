@@ -1,0 +1,26 @@
+# Example calibration. All values are placeholders: replace them with
+# measurements from your own setup (see docs/method.md).
+
+# Focal length of the colour camera, in pixels. With a RealSense camera this is
+# the `fx` intrinsic reported by `depth-volumetry capture`.
+focal_length_px = 600.0
+
+# Distance from the camera to the surface the box rests on, in centimetres.
+camera_height_cm = 200.0
+
+# Height of anything between that surface and the box (for example a pallet).
+base_height_cm = 0.0
+
+# Millimetres per unit of the depth map. 1.0 for 16-bit depth in millimetres,
+# 1000.0 for depth stored as floating-point metres.
+depth_unit_mm = 1.0
+
+# Multiplier applied to the measured distance to the top of the box.
+distance_factor = 1.0
+
+# Percentile band of the depth samples kept before averaging.
+depth_percentiles = [20, 80]
+
+# Optional (x, y) pixel used to pick one box when several are detected.
+# Defaults to the image centre.
+# reference_point = [320, 240]
