@@ -78,9 +78,13 @@ class SpatialEstimator:
             else:
                 cx, cy = (x1 + x2) / 2.0, (y1 + y2) / 2.0
                 point_m = intr.deproject_m(cx, cy, median_m)
-                elevation_m = self._elevation_m(depth_m, box_xyxy, mask, bundle)
+                elevation_m, from_body = self._elevation_m(
+                    depth_m, box_xyxy, mask, bundle, median_m
+                )
                 if elevation_m is None:
-                    quality.append("no_floor" if self.scene.floor is None else "no_foot_depth")
+                    quality.append("no_floor")
+                elif from_body:
+                    quality.append("elevation_from_body_depth")
 
         zones = tuple(z.name for z in self.scene.zones if z.contains(foot_xy, elevation_m))
         return SpatialObs(
@@ -93,12 +97,23 @@ class SpatialEstimator:
         )
 
     def _elevation_m(
-        self, depth_m: NDArray, box_xyxy: BoxXYXY, mask: NDArray | None, bundle: FrameBundle
-    ) -> float | None:
-        """Height of the lowest band of the box above the calibrated floor."""
+        self,
+        depth_m: NDArray,
+        box_xyxy: BoxXYXY,
+        mask: NDArray | None,
+        bundle: FrameBundle,
+        body_m: float,
+    ) -> tuple[float | None, bool]:
+        """Height of the bottom of the box above the calibrated floor.
+
+        Uses the depth of the lowest band of the box. When that band is empty or clearly
+        belongs to something else (a loose box showing the floor or wall behind the
+        animal), it falls back to the body depth and says so.
+        Returns ``(elevation_m, used_body_depth)``.
+        """
         floor = self.scene.floor
         if floor is None or bundle.intrinsics is None:
-            return None
+            return None, False
         cfg = self.config
         x1, y1, x2, y2 = box_xyxy
         band_y1 = y2 - (y2 - y1) * cfg.foot_band
@@ -110,7 +125,7 @@ class SpatialEstimator:
             depth_min_m=cfg.depth_min_m,
             depth_max_m=cfg.depth_max_m,
         )
-        if foot_m is None:
-            return None
-        foot_point = bundle.intrinsics.deproject_m((x1 + x2) / 2.0, y2, foot_m)
-        return floor.signed_distance_m(foot_point)
+        from_body = foot_m is None or abs(foot_m - body_m) > cfg.foot_body_max_diff_m
+        depth_used = body_m if from_body else foot_m
+        foot_point = bundle.intrinsics.deproject_m((x1 + x2) / 2.0, y2, depth_used)
+        return floor.signed_distance_m(foot_point), from_body

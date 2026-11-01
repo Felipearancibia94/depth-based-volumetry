@@ -191,3 +191,12 @@ def test_estimator_flags_low_valid_ratio():
     obs = SpatialEstimator(SceneCalibration(floor=floor), SpatialConfig()).measure(bundle, box)
     assert obs.median_depth_m is None and obs.point_m is None
     assert "low_valid_ratio" in obs.quality
+
+
+def test_elevation_falls_back_to_body_depth_when_feet_show_background():
+    bundle, box, floor = _bundle_with_animal(0.9)
+    x1, y1, x2, y2 = box
+    loose = (x1, y1, x2, y2 + 20)  # box extends well below the animal onto far background
+    obs = SpatialEstimator(SceneCalibration(floor=floor)).measure(bundle, loose)
+    assert "elevation_from_body_depth" in obs.quality
+    assert obs.elevation_m == pytest.approx(0.9, abs=0.1)

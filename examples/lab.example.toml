@@ -35,6 +35,7 @@ max_center_shift = 1.0
 [spatial]
 box_shrink = 0.2
 foot_band = 0.15
+foot_body_max_diff_m = 0.3
 min_valid_ratio = 0.2
 depth_min_m = 0.2
 depth_max_m = 8.0

@@ -42,7 +42,7 @@ _QUALITY_NOTES = {
     "no_depth": "no depth: distances and speeds are in body lengths, elevation unknown",
     "low_valid_ratio": "too few valid depth pixels on the animal: 3D position not measured",
     "no_floor": "no floor calibration: elevation not measured",
-    "no_foot_depth": "no valid depth at the animal's feet: elevation not measured",
+    "elevation_from_body_depth": "feet not resolved in depth: elevation estimated from body depth",
 }
 
 

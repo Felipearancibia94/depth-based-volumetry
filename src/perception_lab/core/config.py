@@ -69,6 +69,7 @@ class SpatialConfig:
     scene_path: str | None = None  # scene TOML with floor plane and zones
     box_shrink: float = 0.2  # fraction trimmed from each side before sampling depth
     foot_band: float = 0.15  # lowest fraction of the box used for the foot depth
+    foot_body_max_diff_m: float = 0.3  # larger gaps mean the band sees background
     min_valid_ratio: float = 0.2
     depth_min_m: float = 0.2
     depth_max_m: float = 8.0
