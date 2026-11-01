@@ -1,0 +1,22 @@
+# Python caches and builds
+__pycache__/
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.venv/
+
+# Secrets
+.env
+.env.*
+
+# Data: models, captures, outputs, real calibration (the example lives in examples/)
+*.onnx
+/data/
+/outputs/
+calibration.toml
+
+# Claude Code personal files
+.claude/settings.local.json
+CLAUDE.local.md
