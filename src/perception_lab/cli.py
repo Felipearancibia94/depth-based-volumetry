@@ -52,7 +52,11 @@ def build_parser() -> argparse.ArgumentParser:
     vlm.add_argument("--vlm", action="store_true", help="enable VLM interpretation")
     vlm.add_argument("--no-vlm", action="store_true", help="disable VLM interpretation")
     p.add_argument("--quiet", action="store_true", help="do not print notifications")
+    p.add_argument("--serve", action="store_true", help="also start the local dashboard")
     p.set_defaults(handler=_run_run)
+
+    p = with_config(sub.add_parser("serve", help="dashboard over the stored events"), source=False)
+    p.set_defaults(handler=_run_serve)
 
     p = sub.add_parser("discover", help="list connected RealSense devices and stream profiles")
     p.set_defaults(handler=_run_discover)
@@ -122,7 +126,20 @@ def _run_run(args: argparse.Namespace) -> int:
     from perception_lab.apps.pets.app import build_app
 
     config = load_with_overrides(args)
-    app = build_app(config, log_stream=None if args.quiet else sys.stdout)
+    app = build_app(
+        config, log_stream=None if args.quiet else sys.stdout, keep_live_view=args.serve
+    )
+    server = None
+    if args.serve:
+        from perception_lab.web.server import DashboardState, start_server
+
+        state = DashboardState(
+            app.store, config.storage.media_dir, app.pipeline.scene, app.pipeline
+        )
+        server, _ = start_server(
+            state, config.web.host, config.web.port, allow_remote=config.web.allow_remote
+        )
+        print(f"dashboard: http://{config.web.host}:{server.server_address[1]}/", flush=True)
     stop = threading.Event()
     try:
         status = app.pipeline.run(app.frames(), stop)
@@ -131,6 +148,8 @@ def _run_run(args: argparse.Namespace) -> int:
         app.pipeline.finish()
         status = app.pipeline.status
     finally:
+        if server is not None:
+            server.shutdown()
         app.close()
     summary = {
         k: status.to_dict()[k] for k in ("frames", "detections", "events", "notifications", "vlm")
@@ -138,6 +157,29 @@ def _run_run(args: argparse.Namespace) -> int:
     summary["stage_ms"] = status.stage_ms
     summary["db_path"] = config.storage.db_path
     print(json.dumps(summary, indent=2))
+    return EXIT_OK
+
+
+def _run_serve(args: argparse.Namespace) -> int:
+    from perception_lab.spatial.scene import load_scene
+    from perception_lab.store.db import EventStore
+    from perception_lab.web.server import DashboardState, start_server
+
+    config = load_with_overrides(args)
+    store = EventStore(config.storage.db_path)
+    scene = load_scene(config.spatial.scene_path) if config.spatial.scene_path else None
+    state = DashboardState(store, config.storage.media_dir, scene)
+    server, thread = start_server(
+        state, config.web.host, config.web.port, allow_remote=config.web.allow_remote
+    )
+    print(f"dashboard: http://{config.web.host}:{server.server_address[1]}/ (Ctrl-C to stop)")
+    try:
+        thread.join()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.shutdown()
+        store.close()
     return EXIT_OK
 
 

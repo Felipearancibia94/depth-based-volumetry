@@ -138,6 +138,7 @@ class NotifyConfig:
 class WebConfig:
     host: str = "127.0.0.1"
     port: int = 8000
+    allow_remote: bool = False  # the dashboard has no authentication
 
 
 @dataclass(frozen=True)
