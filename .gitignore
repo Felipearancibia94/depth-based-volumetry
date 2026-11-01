@@ -17,6 +17,6 @@ dist/
 /outputs/
 calibration.toml
 
-# Claude Code personal files
+# Personal tool files
 .claude/settings.local.json
 CLAUDE.local.md
