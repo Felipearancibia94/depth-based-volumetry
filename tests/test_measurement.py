@@ -4,6 +4,7 @@ import pytest
 
 from depth_volumetry.calibration import Calibration
 from depth_volumetry.measurement import (
+    BoxMeasurement,
     MeasurementError,
     footprint_px,
     measure_box,
@@ -127,3 +128,12 @@ def test_empty_mask_in_measure_box():
     depth, _ = scene()
     with pytest.raises(MeasurementError, match="no object"):
         measure_box(depth, np.zeros(SHAPE, dtype=np.uint8), CALIBRATION)
+
+
+def test_to_dict_is_rounded():
+    result = BoxMeasurement(60.123456, 30.987654, 50.0, 150.0)
+    values = result.to_dict()
+    assert values["length_cm"] == 60.12
+    assert values["width_cm"] == 30.99
+    assert values["volume_cm3"] == round(60.123456 * 30.987654 * 50.0, 2)
+    assert result.to_dict(decimals=0)["length_cm"] == 60.0

@@ -43,8 +43,10 @@ class BoxMeasurement:
     def volume_cm3(self) -> float:
         return self.length_cm * self.width_cm * self.height_cm
 
-    def to_dict(self) -> dict[str, float]:
-        return {**asdict(self), "volume_cm3": self.volume_cm3}
+    def to_dict(self, decimals: int = 2) -> dict[str, float]:
+        """Plain dictionary of the results, rounded to ``decimals`` places."""
+        values = {**asdict(self), "volume_cm3": self.volume_cm3}
+        return {key: round(float(value), decimals) for key, value in values.items()}
 
 
 def footprint_px(mask: NDArray) -> Footprint:
