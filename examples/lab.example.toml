@@ -43,6 +43,7 @@ depth_max_m = 8.0
 [rules]
 cooldown_s = 120.0
 release_s = 3.0
+flicker_tolerance_s = 1.0
 history_s = 600.0
 zone_entry_tags = ["restricted"]
 zone_entry_min_s = 0.5

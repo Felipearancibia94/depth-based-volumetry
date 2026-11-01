@@ -16,6 +16,7 @@ from typing import Any, Protocol
 from perception_lab.core.config import RulesConfig
 from perception_lab.core.types import TrackObservation
 from perception_lab.events.features import (
+    MAX_GAP_S,
     TrackHistory,
     condition_duration_s,
     distance,
@@ -74,6 +75,7 @@ class ZoneRule:
     scene: SceneCalibration
     tag_min_s: dict[str, float]
     tag_hypothesis: dict[str, str]
+    flicker_s: float = 0.0
 
     def evaluate(self, now_s, observations, histories):
         hits = []
@@ -85,7 +87,9 @@ class ZoneRule:
                     continue
                 tag = tags[0]
                 dur = condition_duration_s(
-                    histories[obs.track_id], lambda o, z=zone_name: z in o.spatial.zones
+                    histories[obs.track_id],
+                    lambda o, z=zone_name: z in o.spatial.zones,
+                    self.flicker_s,
                 )
                 if dur >= self.tag_min_s[tag]:
                     facts = {**_base_facts(obs), "duration_s": round(dur, 1), "zone_tag": tag}
@@ -110,6 +114,7 @@ class ElevatedRule:
     min_elevation_m: float
     min_s: float
     name: str = "elevated_surface"
+    flicker_s: float = 0.0
 
     def _elevated(self, obs: TrackObservation) -> bool:
         e = obs.spatial.elevation_m
@@ -123,7 +128,7 @@ class ElevatedRule:
     def evaluate(self, now_s, observations, histories):
         hits = []
         for obs in observations:
-            dur = condition_duration_s(histories[obs.track_id], self._elevated)
+            dur = condition_duration_s(histories[obs.track_id], self._elevated, self.flicker_s)
             if dur >= self.min_s:
                 facts = {**_base_facts(obs), "duration_s": round(dur, 1)}
                 hits.append(
@@ -203,21 +208,29 @@ class SpeedBurstRule:
 
 @dataclass
 class ProximityRule:
-    """Two animals closer than ``max_m`` (or one body length without depth) for ``min_s``."""
+    """Two animals closer than ``max_m`` (or one body length without depth) for ``min_s``.
+
+    The timer survives frames where either animal is missed (up to ``MAX_GAP_S``) and brief
+    measurements of being apart (up to ``flicker_s``).
+    """
 
     max_m: float
     min_s: float
     name: str = "proximity"
+    flicker_s: float = 0.0
     _since: dict[tuple[int, int], float] = field(default_factory=dict)
+    _last_close: dict[tuple[int, int], float] = field(default_factory=dict)
 
     def evaluate(self, now_s, observations, histories):
-        hits, close_now = [], set()
+        hits, close_now, seen_together = [], set(), set()
         for a, b in itertools.combinations(sorted(observations, key=lambda o: o.track_id), 2):
+            pair = (a.track_id, b.track_id)
+            seen_together.add(pair)
             dist, unit = distance(a, b)
             if dist > (self.max_m if unit == "m" else 1.0):
                 continue
-            pair = (a.track_id, b.track_id)
             close_now.add(pair)
+            self._last_close[pair] = now_s
             since = self._since.setdefault(pair, now_s)
             if now_s - since >= self.min_s:
                 facts = {
@@ -228,8 +241,12 @@ class ProximityRule:
                 }
                 hits.append(RuleHit(self.name, "interacting", pair, since, None, facts))
         for pair in list(self._since):
-            if pair not in close_now:
+            if pair in close_now:
+                continue
+            limit = self.flicker_s if pair in seen_together else MAX_GAP_S
+            if now_s - self._last_close[pair] > limit:
                 del self._since[pair]
+                del self._last_close[pair]
         return hits
 
 
@@ -240,14 +257,21 @@ def default_rules(config: RulesConfig, scene: SceneCalibration) -> list[Rule]:
             scene,
             {tag: config.zone_entry_min_s for tag in config.zone_entry_tags},
             {tag: "entered_restricted_area" for tag in config.zone_entry_tags},
+            config.flicker_tolerance_s,
         ),
         ZoneRule(
             "zone_dwell",
             scene,
             dict(config.dwell_tags),
             {tag: DWELL_HYPOTHESES.get(tag, "dwelling") for tag in config.dwell_tags},
+            config.flicker_tolerance_s,
         ),
-        ElevatedRule(scene, config.elevated_min_m, config.elevated_min_s),
+        ElevatedRule(
+            scene,
+            config.elevated_min_m,
+            config.elevated_min_s,
+            flicker_s=config.flicker_tolerance_s,
+        ),
         StationaryRule(
             "stationary",
             "resting_or_sleeping",
@@ -265,5 +289,7 @@ def default_rules(config: RulesConfig, scene: SceneCalibration) -> list[Rule]:
             config.stationary_radius_bl,
         ),
         SpeedBurstRule(config.speed_burst_min_s, config.speed_burst_mps, config.speed_burst_bl),
-        ProximityRule(config.proximity_m, config.proximity_min_s),
+        ProximityRule(
+            config.proximity_m, config.proximity_min_s, flicker_s=config.flicker_tolerance_s
+        ),
     ]

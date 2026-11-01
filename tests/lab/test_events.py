@@ -202,3 +202,28 @@ def test_montage_layout():
     assert grid.shape == (320, 320, 3)
     with pytest.raises(ValueError):
         montage([])
+
+
+def test_condition_duration_tolerates_short_flicker_only():
+    in_bowl = lambda o: "bowl" in o.spatial.zones  # noqa: E731
+    timeline = [obs(t / 2, zones=("bowl",)) for t in range(10)]  # 0 .. 4.5 s
+    timeline += [obs(5.0), obs(5.5)]  # 1 s outside (flicker)
+    timeline += [obs(6 + t / 2, zones=("bowl",)) for t in range(5)]  # 6 .. 8 s
+    h = history(timeline)
+    assert condition_duration_s(h, in_bowl) == 2.0
+    assert condition_duration_s(h, in_bowl, max_false_s=1.5) == 8.0
+    assert condition_duration_s(h, in_bowl, max_false_s=0.5) == 2.0
+
+
+def test_proximity_survives_missed_detections_but_not_separation():
+    rule = ProximityRule(0.5, 5.0, flicker_s=1.0)
+    histories = {1: TrackHistory(1), 2: TrackHistory(2)}
+    hits = []
+    for i in range(30):  # 6 s at 5 fps; the dog is missed every third frame
+        t = i / 5
+        frame = [obs(t, 1, 0.0)] + ([] if i % 3 == 0 else [obs(t, 2, 0.3, label="dog")])
+        hits = rule.evaluate(t, frame, histories)
+    assert hits and hits[0].started_s == pytest.approx(0.2)
+    for i in range(30, 40):  # measured far apart for 2 s
+        rule.evaluate(i / 5, [obs(i / 5, 1, 0.0), obs(i / 5, 2, 3.0, label="dog")], histories)
+    assert rule.evaluate(8.0, [obs(8.0, 1, 0.0), obs(8.0, 2, 0.3, label="dog")], histories) == []

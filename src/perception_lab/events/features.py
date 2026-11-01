@@ -71,17 +71,31 @@ def speed(history: TrackHistory, window_s: float) -> Speed | None:
 
 
 def condition_duration_s(
-    history: TrackHistory, predicate: Callable[[TrackObservation], bool]
+    history: TrackHistory,
+    predicate: Callable[[TrackObservation], bool],
+    max_false_s: float = 0.0,
 ) -> float:
-    """How long ``predicate`` has held continuously up to the latest observation."""
+    """How long ``predicate`` has held up to the latest observation.
+
+    Runs of false observations no longer than ``max_false_s`` (detector flicker, a box
+    edge crossing a zone border) do not break the condition; gaps in the history longer
+    than ``MAX_GAP_S`` always do.
+    """
     obs = list(history.observations)
     if not obs or not predicate(obs[-1]):
         return 0.0
     first = obs[-1]
+    false_run_end: float | None = None  # time of the true observation after a false run
     for prev, cur in zip(reversed(obs[:-1]), reversed(obs[1:]), strict=True):
-        if cur.timestamp_s - prev.timestamp_s > MAX_GAP_S or not predicate(prev):
+        if cur.timestamp_s - prev.timestamp_s > MAX_GAP_S:
             break
-        first = prev
+        if predicate(prev):
+            first, false_run_end = prev, None
+            continue
+        if false_run_end is None:
+            false_run_end = cur.timestamp_s
+        if false_run_end - prev.timestamp_s > max_false_s:
+            break
     return obs[-1].timestamp_s - first.timestamp_s
 
 

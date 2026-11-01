@@ -79,6 +79,7 @@ class SpatialConfig:
 class RulesConfig:
     cooldown_s: float = 120.0
     release_s: float = 3.0  # a condition must be false this long before it can fire again
+    flicker_tolerance_s: float = 1.0  # brief interruptions that do not break a condition
     history_s: float = 600.0
     zone_entry_tags: tuple[str, ...] = ("restricted",)
     zone_entry_min_s: float = 0.5
