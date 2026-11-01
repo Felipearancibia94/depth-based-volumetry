@@ -20,6 +20,8 @@ class_ids = [15, 16]
 class_labels = ["cat", "dog"]
 providers = []
 every_n_frames = 1
+gt_miss_rate = 0.0
+gt_jitter_px = 0.0
 
 [tracker]
 high_score = 0.5

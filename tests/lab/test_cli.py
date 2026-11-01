@@ -37,7 +37,8 @@ def test_help_exits_zero(capsys):
 
 
 @pytest.mark.parametrize(
-    "command", ["init-config", "run", "discover", "record", "replay", "calibrate", "purge"]
+    "command",
+    ["init-config", "run", "serve", "discover", "record", "replay", "calibrate", "eval", "purge"],
 )
 def test_subcommand_help(command, capsys):
     with pytest.raises(SystemExit) as exc:
@@ -136,3 +137,33 @@ def test_discover_with_fake_sdk(monkeypatch, capsys):
     monkeypatch.setitem(sys.modules, "pyrealsense2", fake_rs)
     assert main(["discover"]) == 0
     assert json.loads(capsys.readouterr().out)[0]["serial_number"] == "000111"
+
+
+def test_eval_synthetic_prints_report(tmp_path, capsys):
+    args = ["eval", "--config", str(_config_file(tmp_path)), "--out-dir", str(tmp_path / "runs")]
+    assert main(args) == 0
+    out = capsys.readouterr().out
+    assert "## Rule events" in out and "results:" in out
+
+
+def test_bench_detector_ground_truth(tmp_path, capsys):
+    out = tmp_path / "bench.json"
+    args = [
+        "bench",
+        "detector",
+        "--config",
+        str(_config_file(tmp_path)),
+        "--frames",
+        "5",
+        "--out",
+        str(out),
+    ]
+    assert main(args) == 0
+    assert json.loads(out.read_text())["latency"]["n"] == 5
+
+
+def test_bench_vlm_unreachable_runtime_reports_errors(tmp_path, capsys):
+    cfg = _config_file(tmp_path, '\n[vlm]\nbase_url = "http://127.0.0.1:9"\ntimeout_s = 2.0\n')
+    assert main(["bench", "vlm", "--config", str(cfg), "--images", "1", "--repeats", "1"]) == 0
+    result = json.loads(capsys.readouterr().out)
+    assert result["runs"]["1"]["schema_valid"] == 0 and result["runs"]["1"]["errors"]

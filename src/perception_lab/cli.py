@@ -81,6 +81,32 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--roi-top", type=float, default=0.5, help="use rows below this fraction")
     p.set_defaults(handler=_run_calibrate)
 
+    p = with_config(sub.add_parser("eval", help="replay a source and score events against labels"))
+    p.add_argument(
+        "--labels", type=Path, help="labels JSON (synthetic sources have built-in labels)"
+    )
+    p.add_argument("--out-dir", type=Path, default=Path("outputs/runs"))
+    p.add_argument("--tolerance", type=float, default=2.0, help="time tolerance in seconds")
+    vlm = p.add_mutually_exclusive_group()
+    vlm.add_argument("--vlm", action="store_true", help="enable VLM interpretation")
+    vlm.add_argument("--no-vlm", action="store_true", help="disable VLM interpretation")
+    p.set_defaults(handler=_run_eval)
+
+    p = sub.add_parser("bench", help="measure latency and GPU memory on this machine")
+    bench = p.add_subparsers(dest="target", required=True)
+    b = with_config(bench.add_parser("detector", help="detector latency per frame"))
+    b.add_argument("--warmup", type=int, default=5)
+    b.add_argument("--out", type=Path, help="also write the JSON result here")
+    b.set_defaults(handler=_run_bench_detector)
+    b = with_config(bench.add_parser("vlm", help="VLM latency, schema validity and VRAM"), False)
+    b.add_argument("--images", default="1,3", help="comma-separated image counts per request")
+    b.add_argument("--repeats", type=int, default=3)
+    b.add_argument("--image", help="test image (default: a synthetic frame)")
+    b.add_argument("--model", help="override vlm.model")
+    b.add_argument("--montage", action="store_true", help="send frames as one grid image")
+    b.add_argument("--out", type=Path, help="also write the JSON result here")
+    b.set_defaults(handler=_run_bench_vlm)
+
     p = with_config(sub.add_parser("purge", help="apply media and event retention"), source=False)
     p.add_argument("--dry-run", action="store_true")
     p.set_defaults(handler=_run_purge)
@@ -282,6 +308,56 @@ def _run_calibrate(args: argparse.Namespace) -> int:
             "warning: under half the points fit the plane; check the floor is visible and clear",
             file=sys.stderr,
         )
+    return EXIT_OK
+
+
+def _run_eval(args: argparse.Namespace) -> int:
+    from perception_lab.eval.runner import run_evaluation
+
+    config = load_with_overrides(args)
+    metrics = run_evaluation(
+        config, labels_path=args.labels, out_dir=args.out_dir, tolerance_s=args.tolerance
+    )
+    run_dir = args.out_dir / metrics["run_id"]
+    print((run_dir / "report.md").read_text())
+    print(f"results: {run_dir}")
+    return EXIT_OK
+
+
+def _emit(result: dict, out: Path | None) -> None:
+    text = json.dumps(result, indent=2)
+    print(text)
+    if out is not None:
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(text)
+
+
+def _run_bench_detector(args: argparse.Namespace) -> int:
+    from perception_lab.core.runrecord import build_run_record
+    from perception_lab.eval.bench import bench_detector
+
+    config = load_with_overrides(args)
+    result = bench_detector(config, frames=config.source.max_frames or 100, warmup=args.warmup)
+    result["run_record"] = build_run_record(config)
+    _emit(result, args.out)
+    return EXIT_OK
+
+
+def _run_bench_vlm(args: argparse.Namespace) -> int:
+    from perception_lab.core.runrecord import build_run_record
+    from perception_lab.eval.bench import bench_vlm
+
+    config = load_with_overrides(args)
+    vlm = config.vlm
+    if args.model:
+        vlm = replace(vlm, model=args.model)
+    if args.montage:
+        vlm = replace(vlm, montage=True)
+    config = replace(config, vlm=replace(vlm, enabled=True))
+    counts = [int(v) for v in args.images.split(",") if v.strip()]
+    result = bench_vlm(config, image_counts=counts, repeats=args.repeats, image_path=args.image)
+    result["run_record"] = build_run_record(config)
+    _emit(result, args.out)
     return EXIT_OK
 
 

@@ -192,7 +192,7 @@ class GroundTruthDetector:
 
 def create_detector(config: DetectorConfig) -> Detector:
     if config.kind == "ground_truth":
-        return GroundTruthDetector()
+        return GroundTruthDetector(miss_rate=config.gt_miss_rate, jitter_px=config.gt_jitter_px)
     return YoloOnnxDetector.from_config(config)
 
 

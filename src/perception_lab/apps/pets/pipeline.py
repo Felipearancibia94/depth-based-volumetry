@@ -94,6 +94,7 @@ class PetPipeline:
             config.storage.evidence_max_side_px,
         )
         self.histories: dict[int, TrackHistory] = {}
+        self.last_observations: list[TrackObservation] = []  # confirmed tracks, latest frame
         self.status = PipelineStatus()
         self.keep_live_view = keep_live_view
         self.live_jpeg: bytes | None = None
@@ -140,6 +141,7 @@ class PetPipeline:
         for tid in [t for t in self.histories if t not in alive]:
             del self.histories[tid]
 
+        self.last_observations = observations
         self.ring.maybe_add(bundle, observations)
         output = self.engine.update(bundle.timestamp_s, observations, self.histories)
         started = [self._start_event(hit, bundle, observations) for hit in output.started]

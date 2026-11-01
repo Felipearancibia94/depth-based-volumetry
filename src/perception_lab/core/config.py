@@ -48,6 +48,9 @@ class DetectorConfig:
     class_labels: tuple[str, ...] = ("cat", "dog")  # names for ``class_ids``, same order
     providers: tuple[str, ...] = ()  # ONNX Runtime providers; empty = all available
     every_n_frames: int = 1
+    # ground_truth detector only (synthetic robustness tests): drop and jitter boxes
+    gt_miss_rate: float = 0.0
+    gt_jitter_px: float = 0.0
 
 
 @dataclass(frozen=True)
