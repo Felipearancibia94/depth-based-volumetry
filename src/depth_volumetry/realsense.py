@@ -27,7 +27,8 @@ class CapturedFrames:
     depth_unit_mm: float
 
 
-def _load_pyrealsense2() -> Any:
+def load_pyrealsense2() -> Any:
+    """Import ``pyrealsense2`` or raise :class:`RealSenseUnavailableError` with install help."""
     try:
         import pyrealsense2
     except ImportError as exc:
@@ -45,7 +46,7 @@ def capture_frames(
 
     The first ``warmup_frames`` frames are discarded so auto-exposure can settle.
     """
-    rs = _load_pyrealsense2()
+    rs = load_pyrealsense2()
 
     pipeline = rs.pipeline()
     config = rs.config()
