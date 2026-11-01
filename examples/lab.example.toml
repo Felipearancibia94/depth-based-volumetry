@@ -1,0 +1,93 @@
+# Example lab configuration (all defaults). Copy to lab.toml and edit; lab.toml is
+# git-ignored. Optional keys left out here (paths, serials) default to "not set".
+
+[source]
+kind = "synthetic"
+camera_id = "cam0"
+width_px = 640
+height_px = 480
+fps = 15
+depth = true
+real_time = false
+synthetic_seconds = 120.0
+seed = 0
+
+[detector]
+kind = "ground_truth"
+score_threshold = 0.35
+iou_threshold = 0.5
+class_ids = [15, 16]
+class_labels = ["cat", "dog"]
+providers = []
+every_n_frames = 1
+
+[tracker]
+high_score = 0.5
+low_score = 0.15
+match_iou = 0.3
+low_match_iou = 0.5
+min_hits = 3
+max_lost_s = 2.0
+
+[spatial]
+box_shrink = 0.2
+foot_band = 0.15
+min_valid_ratio = 0.2
+depth_min_m = 0.2
+depth_max_m = 8.0
+
+[rules]
+cooldown_s = 120.0
+release_s = 3.0
+history_s = 600.0
+zone_entry_tags = ["restricted"]
+zone_entry_min_s = 0.5
+dwell_tags = { "food" = 15.0, "water" = 10.0, "bed" = 60.0 }
+elevated_min_m = 0.5
+elevated_min_s = 2.0
+stationary_radius_m = 0.15
+stationary_radius_bl = 0.3
+stationary_s = 300.0
+long_inactivity_s = 3600.0
+speed_window_s = 1.0
+speed_burst_mps = 1.2
+speed_burst_bl = 2.5
+speed_burst_min_s = 1.0
+proximity_m = 0.5
+proximity_min_s = 5.0
+
+[vlm]
+enabled = false
+provider = "ollama"
+base_url = "http://127.0.0.1:11434"
+model = "qwen3-vl:2b"
+max_images = 4
+image_max_side_px = 448
+montage = false
+context_frame = true
+temperature = 0.0
+timeout_s = 120.0
+max_requests_per_minute = 4.0
+queue_size = 8
+keep_alive = "5m"
+allow_remote = false
+
+[storage]
+db_path = "data/lab.db"
+media_dir = "data/media"
+ring_buffer_s = 20.0
+ring_buffer_fps = 4.0
+evidence_frames = 4
+evidence_max_side_px = 640
+media_retention_days = 14.0
+event_retention_days = 365.0
+
+[notify]
+desktop = true
+allow_remote_webhook = false
+min_interval_s = 60.0
+rules = []
+
+[web]
+host = "127.0.0.1"
+port = 8000

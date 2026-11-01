@@ -1,7 +1,7 @@
 [project]
 name = "depth-based-volumetry"
 version = "0.1.0"
-description = "Estimate box length, width and height from an aligned colour + depth image pair."
+description = "Box volumetry and home perception experiments from aligned colour + depth images."
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
@@ -19,6 +19,7 @@ realsense = [
 
 [project.scripts]
 depth-volumetry = "depth_volumetry.cli:main"
+lab = "perception_lab.cli:main"
 
 [dependency-groups]
 dev = [
@@ -31,7 +32,7 @@ requires = ["uv_build>=0.11.0,<0.12"]
 build-backend = "uv_build"
 
 [tool.uv.build-backend]
-module-name = "depth_volumetry"
+module-name = ["depth_volumetry", "perception_lab"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

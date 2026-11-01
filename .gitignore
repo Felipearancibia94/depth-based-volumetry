@@ -17,6 +17,14 @@ dist/
 /outputs/
 calibration.toml
 
+# Lab: recordings, event databases, media, local configs and scene calibration
+*.bag
+*.db
+*.db-wal
+*.db-shm
+lab.toml
+scene.toml
+
 # Personal tool files
 .claude/settings.local.json
 CLAUDE.local.md
