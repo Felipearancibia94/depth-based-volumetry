@@ -3,6 +3,10 @@
 Estimate a box's length, width and height from an aligned colour + depth image pair.
 A Python library and a small command-line tool.
 
+The repository also contains `perception_lab`, a local-first home perception lab built on
+the same RGB-D foundations. Its first application monitors pets; see
+[Home perception lab](#home-perception-lab-lab) below.
+
 ## How it works
 
 1. **Segment** the box in the colour image, either with your own ONNX instance-segmentation
@@ -114,10 +118,46 @@ result = measure_box(read_depth("depth.npy"), read_mask("mask.png"), calibration
 print(result.length_cm, result.width_cm, result.height_cm, result.volume_cm3)
 ```
 
+## Home perception lab (`lab`)
+
+`lab` monitors cats and dogs with a RealSense camera, entirely on the local machine:
+detection and tracking, depth-based facts (distance, elevation above the floor, zones),
+deterministic event rules, optional descriptions from a local vision-language model through
+Ollama or llama.cpp, desktop notifications and a dashboard on 127.0.0.1. Design, setup,
+calibration, the evaluation protocol and limitations are in
+[`docs/pet-monitoring.md`](docs/pet-monitoring.md).
+
+Try it without any hardware on the built-in synthetic scene:
+
+```bash
+uv run lab run --frames 600
+uv run lab eval
+```
+
+| Command | Purpose |
+|---|---|
+| `lab init-config --out lab.toml` | write the default configuration ([`examples/lab.example.toml`](examples/lab.example.toml)) |
+| `lab discover` | list RealSense devices, USB type and stream profiles |
+| `lab record --seconds S --out F.bag` | record a session (plus a JSON sidecar) |
+| `lab replay --source bag --path F.bag` | stream statistics and colour/depth previews (`--preview-dir`) |
+| `lab calibrate --out scene.toml` | fit the floor plane, keeping existing zones |
+| `lab run [--vlm] [--serve]` | monitor; `--serve` starts the dashboard |
+| `lab serve` | dashboard over stored events |
+| `lab eval [--labels L.json]` | score a run against labels ([`examples/labels.example.json`](examples/labels.example.json)) |
+| `lab bench detector` / `lab bench vlm` | latency, schema validity and GPU memory on this machine |
+| `lab purge [--dry-run]` | apply media and event retention |
+
+Most commands take `--config`, `--source`, `--path` and `--frames`. Exit codes: `0`
+success, `1` nothing to do (no device, no frames), `2` usage, input or configuration error.
+
+The lab has been tested only with synthetic data, a fake RealSense SDK and a fake VLM
+runtime; real-hardware and real-model results must come from your own `lab eval` and
+`lab bench` runs.
+
 ## Configuration
 
-There are no environment variables. Everything comes from command-line flags and the
-calibration file.
+There are no environment variables. Everything comes from command-line flags, the
+calibration file and, for `lab`, the TOML configuration and scene files.
 
 ## Development
 

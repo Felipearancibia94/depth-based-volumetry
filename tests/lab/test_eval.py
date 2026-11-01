@@ -172,3 +172,10 @@ def test_bench_detector_and_vlm_with_fakes():
     assert result["runs"]["1"]["schema_valid"] == 0 and result["runs"]["2"]["requests"] == 2
     assert sorted(set(seen)) == [1, 2]  # images per request as asked (two attempts each)
     assert result["cold_latency_s"] is not None
+
+
+def test_example_labels_file_is_valid():
+    from pathlib import Path
+
+    labels = load_labels(Path(__file__).parents[2] / "examples" / "labels.example.json")
+    assert len(labels.segments) == 4 and labels.segments[3].animal_class is None

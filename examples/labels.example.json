@@ -1,0 +1,10 @@
+{
+  "recording": "living-room-example.bag",
+  "duration_s": 600,
+  "segments": [
+    {"activity": "eating", "t_start_s": 42.0, "t_end_s": 95.5, "animal_class": "cat"},
+    {"activity": "entered_restricted_area", "t_start_s": 130.0, "t_end_s": 136.0, "animal_class": "dog"},
+    {"activity": "on_elevated_surface", "t_start_s": 210.0, "t_end_s": 260.0, "animal_class": "cat"},
+    {"activity": "interacting", "t_start_s": 400.0, "t_end_s": 415.0, "animal_class": null}
+  ]
+}

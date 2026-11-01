@@ -80,3 +80,10 @@ def test_run_record(tmp_path):
     assert record["suite"] == "unit"
     assert len(record["config_sha256"]) == 64
     assert write_json(tmp_path / "r" / "run.json", record).is_file()
+
+
+def test_example_config_matches_defaults():
+    from pathlib import Path
+
+    example = Path(__file__).parents[2] / "examples" / "lab.example.toml"
+    assert load_config(example) == LabConfig()
