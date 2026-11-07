@@ -12,15 +12,27 @@ must come from your own runs (`lab eval`, `lab bench`).
 
 ## Architecture
 
+```mermaid
+flowchart LR
+    subgraph frame["Per frame (synchronous)"]
+        SRC["FrameSource<br/>RealSense, .bag,<br/>video, synthetic"] --> DET["Detector<br/>YOLOv8 ONNX"]
+        DET --> TRK["Tracker<br/>ByteTrack style"]
+        TRK --> SPA["SpatialEstimator<br/>depth, floor, zones"]
+        SPA --> HIS["TrackHistory<br/>per track"]
+        HIS --> RUL["EventEngine<br/>deterministic rules"]
+    end
+    subgraph event["Per event"]
+        RUL -- "event starts" --> PIPE["PetPipeline<br/>facts + evidence"]
+        PIPE --> STORE[("EventStore<br/>SQLite + images")]
+        PIPE --> NOT["Notifier<br/>notify-send / webhook"]
+        PIPE -. "evidence" .-> VLM["VLMWorker<br/>async, local"]
+        VLM -. "description" .-> STORE
+        STORE --> DASH["Dashboard<br/>127.0.0.1"]
+    end
 ```
-FrameSource ──▶ Detector ──▶ Tracker ──▶ SpatialEstimator ──▶ TrackHistory
- (RealSense,    (YOLOv8      (ByteTrack   (depth, 3D point,     (per track)
-  .bag, video,   ONNX)        style)       elevation, zones)          │
-  synthetic)                                                          ▼
-                       Dashboard ◀── EventStore ◀── PetPipeline ◀── EventEngine (rules)
-                       Notifier  ◀───────────────────┤
-                                                     └──▶ VLMWorker (event-gated, async)
-```
+
+Alerts and notifications come from the rules and never wait for the VLM; its answer is
+merged into the stored event afterwards.
 
 | Module | Responsibility |
 |---|---|
