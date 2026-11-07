@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-20 0 1140 665" width="1140" height="665" font-family="'Segoe UI', Helvetica, Arial, sans-serif">
+<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1e1e1e"/></marker></defs>
+<rect x="-20" y="0" width="1140" height="665" fill="#ffffff"/>
+<text x="290" y="38" font-size="28" fill="#1e1e1e">Monitoreo de mascotas: flujo de datos</text>
+<rect x="0" y="65" width="1100" height="165" rx="14" fill="#dbe4ff" stroke="#4a9eed" stroke-width="1" opacity="0.3"/>
+<text x="10" y="90" font-size="18" fill="#1d4ed8">Por fotograma (síncrono)</text>
+<rect x="20" y="100" width="180" height="110" rx="14" fill="#a5d8ff" stroke="#4a9eed" stroke-width="2" opacity="1.0"/>
+<text text-anchor="middle" font-size="18" fill="#1e1e1e"><tspan x="110.0" y="139.2">Fuentes</tspan><tspan x="110.0" y="161.8">RealSense / .bag</tspan><tspan x="110.0" y="184.2">video / sintética</tspan></text>
+<path d="M200,155 L240,155" fill="none" stroke="#1e1e1e" stroke-width="2" marker-end="url(#ah)"/>
+<rect x="240" y="100" width="180" height="110" rx="14" fill="#d0bfff" stroke="#8b5cf6" stroke-width="2" opacity="1.0"/>
+<text text-anchor="middle" font-size="18" fill="#1e1e1e"><tspan x="330.0" y="139.2">Detector</tspan><tspan x="330.0" y="161.8">YOLOv8 ONNX</tspan><tspan x="330.0" y="184.2">gato / perro</tspan></text>
+<path d="M420,155 L460,155" fill="none" stroke="#1e1e1e" stroke-width="2" marker-end="url(#ah)"/>
+<rect x="460" y="100" width="180" height="110" rx="14" fill="#d0bfff" stroke="#8b5cf6" stroke-width="2" opacity="1.0"/>
+<text text-anchor="middle" font-size="18" fill="#1e1e1e"><tspan x="550.0" y="139.2">Tracker</tspan><tspan x="550.0" y="161.8">estilo ByteTrack</tspan><tspan x="550.0" y="184.2">ID por animal</tspan></text>
+<path d="M640,155 L680,155" fill="none" stroke="#1e1e1e" stroke-width="2" marker-end="url(#ah)"/>
+<rect x="680" y="100" width="180" height="110" rx="14" fill="#b2f2bb" stroke="#22c55e" stroke-width="2" opacity="1.0"/>
+<text text-anchor="middle" font-size="18" fill="#1e1e1e"><tspan x="770.0" y="139.2">Espacial</tspan><tspan x="770.0" y="161.8">profundidad, piso,</tspan><tspan x="770.0" y="184.2">zonas</tspan></text>
+<path d="M860,155 L900,155" fill="none" stroke="#1e1e1e" stroke-width="2" marker-end="url(#ah)"/>
+<rect x="900" y="100" width="180" height="110" rx="14" fill="#ffd8a8" stroke="#f59e0b" stroke-width="2" opacity="1.0"/>
+<text text-anchor="middle" font-size="18" fill="#1e1e1e"><tspan x="990.0" y="139.2">Reglas</tspan><tspan x="990.0" y="161.8">deterministas</tspan><tspan x="990.0" y="184.2">7 reglas</tspan></text>
+<rect x="430" y="255" width="670" height="350" rx="14" fill="#e5dbff" stroke="#8b5cf6" stroke-width="1" opacity="0.3"/>
+<text x="445" y="280" font-size="18" fill="#6d28d9">Por evento</text>
+<path d="M990,210 L990,290" fill="none" stroke="#1e1e1e" stroke-width="2" marker-end="url(#ah)"/>
+<text text-anchor="start" font-size="16" fill="#1e1e1e" stroke="#ffffff" stroke-width="5" paint-order="stroke"><tspan x="996.0" y="256.0">inicia</tspan></text>
+<rect x="900" y="290" width="180" height="100" rx="14" fill="#fff3bf" stroke="#f59e0b" stroke-width="2" opacity="1.0"/>
+<text text-anchor="middle" font-size="18" fill="#1e1e1e"><tspan x="990.0" y="335.5">Evento</tspan><tspan x="990.0" y="358.0">hechos + evidencia</tspan></text>
+<path d="M900,340 L860,340" fill="none" stroke="#1e1e1e" stroke-width="2" marker-end="url(#ah)"/>
+<rect x="680" y="290" width="180" height="100" rx="14" fill="#c3fae8" stroke="#06b6d4" stroke-width="2" opacity="1.0"/>
+<text text-anchor="middle" font-size="18" fill="#1e1e1e"><tspan x="770.0" y="335.5">SQLite + evidencia</tspan><tspan x="770.0" y="358.0">retención, búsqueda</tspan></text>
+<path d="M680,340 L640,340" fill="none" stroke="#1e1e1e" stroke-width="2" marker-end="url(#ah)"/>
+<rect x="460" y="290" width="180" height="100" rx="14" fill="#a5d8ff" stroke="#4a9eed" stroke-width="2" opacity="1.0"/>
+<text text-anchor="middle" font-size="18" fill="#1e1e1e"><tspan x="550.0" y="335.5">Dashboard</tspan><tspan x="550.0" y="358.0">127.0.0.1</tspan></text>
+<path d="M1020,390 L1020,480" fill="none" stroke="#1e1e1e" stroke-width="2" marker-end="url(#ah)"/>
+<text text-anchor="start" font-size="16" fill="#1e1e1e" stroke="#ffffff" stroke-width="5" paint-order="stroke"><tspan x="1026.0" y="441.0">alerta</tspan></text>
+<rect x="900" y="480" width="180" height="100" rx="14" fill="#ffd8a8" stroke="#f59e0b" stroke-width="2" opacity="1.0"/>
+<text text-anchor="middle" font-size="18" fill="#1e1e1e"><tspan x="990.0" y="514.2">Notificación</tspan><tspan x="990.0" y="536.8">notify-send /</tspan><tspan x="990.0" y="559.2">webhook local</tspan></text>
+<path d="M920,390 L850,480" fill="none" stroke="#1e1e1e" stroke-width="2" stroke-dasharray="8 6" marker-end="url(#ah)"/>
+<text text-anchor="start" font-size="16" fill="#1e1e1e" stroke="#ffffff" stroke-width="5" paint-order="stroke"><tspan x="912.0" y="414.0">evidencia</tspan></text>
+<rect x="680" y="480" width="180" height="100" rx="14" fill="#eebefa" stroke="#ec4899" stroke-width="2" opacity="1.0"/>
+<text text-anchor="middle" font-size="18" fill="#1e1e1e"><tspan x="770.0" y="514.2">VLM local</tspan><tspan x="770.0" y="536.8">asíncrono</tspan><tspan x="770.0" y="559.2">Ollama/llama.cpp</tspan></text>
+<path d="M770,480 L770,390" fill="none" stroke="#1e1e1e" stroke-width="2" stroke-dasharray="8 6" marker-end="url(#ah)"/>
+<text text-anchor="start" font-size="16" fill="#1e1e1e" stroke="#ffffff" stroke-width="5" paint-order="stroke"><tspan x="776.0" y="441.0">descripción</tspan></text>
+<rect x="20" y="480" width="380" height="100" rx="14" fill="#fff3bf" stroke="#f59e0b" stroke-width="1" opacity="1.0"/>
+<text text-anchor="middle" font-size="18" fill="#1e1e1e"><tspan x="210.0" y="514.2">Un evento separa:</tspan><tspan x="210.0" y="536.8">hechos medidos, interpretación</tspan><tspan x="210.0" y="559.2">del VLM e incertidumbre</tspan></text>
+<text x="20" y="645" font-size="20" fill="#757575">Las reglas deciden y alertan; el VLM solo describe, y &#x27;unknown&#x27; es una respuesta válida.</text>
+</svg>

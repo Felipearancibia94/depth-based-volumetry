@@ -127,6 +127,11 @@ Ollama or llama.cpp, desktop notifications and a dashboard on 127.0.0.1. Design,
 calibration, the evaluation protocol and limitations are in
 [`docs/pet-monitoring.md`](docs/pet-monitoring.md).
 
+![Pet monitoring data flow](docs/diagrams/pet-monitoring-architecture.svg)
+
+The diagram is also available as an editable
+[Excalidraw file](docs/diagrams/pet-monitoring-architecture.excalidraw).
+
 Try it without any hardware on the built-in synthetic scene:
 
 ```bash

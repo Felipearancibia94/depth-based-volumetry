@@ -34,6 +34,11 @@ flowchart LR
 Alerts and notifications come from the rules and never wait for the VLM; its answer is
 merged into the stored event afterwards.
 
+The same flow as an image (`docs/diagrams/pet-monitoring-architecture.svg`, editable source
+in `docs/diagrams/pet-monitoring-architecture.excalidraw`):
+
+![Pet monitoring data flow](diagrams/pet-monitoring-architecture.svg)
+
 | Module | Responsibility |
 |---|---|
 | `sources/` | `FrameBundle` (colour, aligned depth, intrinsics, timestamp) from RealSense live, `.bag` replay, video or the synthetic scene; `throttle` drops frames instead of queuing |
