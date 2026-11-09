@@ -1,0 +1,32 @@
+{
+  "name": "Negrita",
+  "name_source": "assigned by the owner; the lab does not identify individual animals",
+  "captured_at": "2026-11-09",
+  "image": "negrita.jpg",
+  "image_note": "sharpest of four crops from the most recent live capture (137x162 px, cropped around the animal)",
+  "detector": {
+    "class": "cat",
+    "score_range_of_that_capture": [
+      0.3,
+      0.48
+    ]
+  },
+  "vlm": {
+    "model": "qwen3-vl:2b-instruct",
+    "prompt_version": "pets_v1",
+    "activity": "resting_or_sleeping",
+    "description": "A black cat is shown in a relaxed posture, sitting on an elevated surface, likely a cat tree. The cat is facing forward, and its body is mostly in a still position, suggesting it is resting or sleeping.",
+    "visual_observations": [
+      "The cat is black and is positioned on a cat tree.",
+      "The cat is facing forward, with its head and ears visible.",
+      "The cat is on an elevated surface, and the background includes a textured wall and a curtain.",
+      "The cat's body is mostly in a relaxed, still position."
+    ],
+    "uncertainty": [
+      "The cat's eyes are not clearly visible, making it difficult to determine if it is awake or asleep.",
+      "The exact position of the cat's paws or the base of the cat tree is not visible, which could affect the determination of its activity."
+    ],
+    "certainty": "high"
+  },
+  "note": "The VLM text is an interpretation, not a measurement; its certainty is not a confidence."
+}

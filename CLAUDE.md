@@ -50,7 +50,8 @@ Add dependencies with `uv add` / `uv add --dev` so `uv.lock` stays in sync. Neve
 - Never add credentials, company or client names, or non-loopback endpoints to the
   repository. Loopback defaults (`127.0.0.1`, `localhost`) in examples are allowed.
 - Never commit model weights (`*.onnx`, `*.pt`, `*.engine`, `*.gguf`, anything under
-  `models/`), captures, recordings, databases or real calibration files.
+  `models/`), captures, recordings, databases or real calibration files. The only exception is
+  `docs/gallery/`: one image per pet picked by the owner, with no people in it.
 - Tests use synthetic data only and need no network, camera or model.
 - Do not claim real-model inference, RealSense capture or real-world accuracy unless it was
   actually run on that hardware or model.

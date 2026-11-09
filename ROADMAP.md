@@ -94,6 +94,10 @@ Run on the target machine and keep the outputs ([`docs/pet-monitoring.md`](docs/
 - Per-animal baselines for `unusual_inactivity`; per-pet identity.
 - Further applications from the plan: food/water station, interaction monitoring,
   occupancy heatmaps, smart-home hooks.
+- Gallery update: a command (opt-in, with the commit left to the owner) that copies the best
+  recent crop of each named pet into [`docs/gallery/`](docs/gallery/README.md) for a personal
+  site. It needs per-pet identity, which does not exist yet; today `negrita.jpg` and
+  `negrita.json` were made by hand from the last live capture.
 - Multi-camera support; daily summaries with a text LLM.
 - HTTP API and Docker image for `depth_volumetry` (README "Future work").
 
