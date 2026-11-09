@@ -121,7 +121,7 @@ class VLMConfig:
     enabled: bool = False
     provider: Literal["ollama", "openai_compat"] = "ollama"
     base_url: str = "http://127.0.0.1:11434"
-    model: str = "qwen3-vl:2b"
+    model: str = "qwen3-vl:2b-instruct"  # the plain 2b tag is the reasoning variant
     max_images: int = 4
     image_max_side_px: int = 448
     montage: bool = False  # one combined image, for runtimes without multi-image input

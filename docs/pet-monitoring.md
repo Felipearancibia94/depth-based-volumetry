@@ -130,11 +130,12 @@ uv run lab replay --source bag --path data/recordings/first.bag --preview-dir ou
 ### VLM runtime
 
 Install [Ollama](https://ollama.com) (or llama.cpp `llama-server`) locally and pull the
-smallest candidate first. Check the exact model tag in the Ollama library; `qwen3-vl:2b` is
-the configured default but was not verified from this repository.
+smallest candidate first. The configured default is `qwen3-vl:2b-instruct` (listed in the
+Ollama library on 2026-11-09). The plain `qwen3-vl:2b` tag is the reasoning variant, which was
+slow and often cut its answers on this machine.
 
 ```bash
-ollama pull qwen3-vl:2b
+ollama pull qwen3-vl:2b-instruct
 ```
 
 ```bash

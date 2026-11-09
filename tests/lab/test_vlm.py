@@ -148,7 +148,7 @@ def test_interpreter_success_records_provenance():
     result = interp.interpret(_event(), _images(2), [5.0, 6.0])
     assert result.status == "done" and result.attempts == 1
     i = result.interpretation
-    assert i["activity"] == "eating" and i["model"] == "qwen3-vl:2b"
+    assert i["activity"] == "eating" and i["model"] == "qwen3-vl:2b-instruct"
     assert i["prompt_version"] == "pets_v1" and i["image_count"] == 2
     assert len(runtime.requests[0][1]["messages"][0]["images"]) == 2
 

@@ -70,8 +70,8 @@ Run on the target machine and keep the outputs ([`docs/pet-monitoring.md`](docs/
 - [x] `vlm.num_ctx` (default 8192) is now in `VLMConfig`, sent to Ollama and covered by tests.
       Through `lab bench vlm` with the instruct tag and real frames, first (uncached) request:
       1 image 16.0 s, 2 images 21.6 s, 4 images 42.1 s; repeats 2.0-3.2 s from the cache; 6 of
-      6 answers valid; whole-GPU peak 4.25 GB. Still open: change the default model tag from
-      `qwen3-vl:2b` to `qwen3-vl:2b-instruct`, compare 2 against 4 images and the 4B model on
+      6 answers valid; whole-GPU peak 4.25 GB. The default model tag is now
+      `qwen3-vl:2b-instruct`. Still open: compare 2 against 4 images and the 4B model on
       labelled cat events, and decide how many images per event given about 10 s per image.
 - [x] **Pet names (`vlm.pets`, answer field `pet`).** Implemented with a configurable list, a
       constrained value (names or `unknown`) and tests. Through the lab's code on saved crops:

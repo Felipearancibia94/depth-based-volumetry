@@ -106,3 +106,8 @@ def test_pets_load_and_survive_a_dump_round_trip(tmp_path):
     path = tmp_path / "lab.toml"
     path.write_text(dump_config(cfg), encoding="utf-8")
     assert load_config(path) == cfg
+
+
+def test_default_vlm_is_the_instruct_tag():
+    # The plain qwen3-vl:2b tag is the reasoning variant: slow and often cut on a 6 GB card.
+    assert LabConfig().vlm.model == "qwen3-vl:2b-instruct"
