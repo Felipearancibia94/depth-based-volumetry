@@ -7,6 +7,7 @@ versions once they are committed).
 | Pet | Image | Data |
 |---|---|---|
 | Negrita | [negrita.jpg](negrita.jpg) | [negrita.json](negrita.json) |
+| Nube | [nube.jpg](nube.jpg) | [nube.json](nube.json) |
 
 Rules for this folder:
 

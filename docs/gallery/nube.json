@@ -1,0 +1,31 @@
+{
+  "name": "Nube",
+  "name_source": "assigned by the owner; the lab does not identify individual animals",
+  "captured_at": "2026-11-09",
+  "image": "nube.jpg",
+  "image_note": "crop of the animal from a live capture, rotated 180 degrees so it reads upright (the camera image came out upside down); 270x115 px",
+  "detector": {
+    "class": "cat",
+    "score_on_this_image": 0.95,
+    "note": "measured on this rotated crop; in the full live frame, as captured, the same animal scored lower and was labelled dog"
+  },
+  "vlm": {
+    "model": "qwen3-vl:2b-instruct",
+    "prompt_version": "pets_v1+pet",
+    "pet": "Nube",
+    "activity": "resting_or_sleeping",
+    "description": "A cat with a tricolor coat is lying on a wooden surface, appearing to be resting or sleeping.",
+    "visual_observations": [
+      "The cat is on a wooden surface.",
+      "The cat has a mix of black, orange, and white fur.",
+      "The cat is in a relaxed posture with its body stretched out.",
+      "The background includes a white textured surface, possibly a mattress."
+    ],
+    "uncertainty": [
+      "The cat's exact position and the surface it is on are not fully clear.",
+      "The image is blurry, making it difficult to determine if the cat is fully resting or if it is in motion."
+    ],
+    "certainty": "medium"
+  },
+  "note": "The VLM text is an interpretation, not a measurement; its certainty is not a confidence."
+}
