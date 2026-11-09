@@ -171,6 +171,12 @@ in `interpretation`, next to the activity: it is the model's reading of the imag
 measurement, and the lab has no recognition model. It adds about 80 prompt tokens and a few
 output tokens per request.
 
+The path from a camera frame to a named pet, the three animals and the known limits are
+drawn in `docs/diagrams/pet-identification.png` (editable source:
+`docs/diagrams/pet-identification.excalidraw`, with the gallery photos embedded):
+
+![From a camera frame to a named pet](diagrams/pet-identification.png)
+
 What was checked (2026-11-09, `qwen3-vl:2b-instruct`, saved crops, through the lab's own
 code): a black cat named correctly from four crops, a tricolor cat named correctly from one
 crop, and a room with no animal named as a pet with certainty `high`. So the value can be wrong
