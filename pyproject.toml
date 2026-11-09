@@ -14,7 +14,7 @@ dependencies = [
 
 [project.optional-dependencies]
 realsense = [
-    "pyrealsense2>=2.50",
+    "pyrealsense2>=2.50,<2.56",
 ]
 
 [project.scripts]

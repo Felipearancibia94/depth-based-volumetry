@@ -36,8 +36,11 @@ Run on the target machine and keep the outputs ([`docs/pet-monitoring.md`](docs/
       default `.bag` name is rejected), and replaying a `.db3` returns corrupt depth-to-colour
       extrinsics, so the aligned depth is all zeros although the file holds valid depth. With
       `pyrealsense2` 2.55.1 on Python 3.11 a `.bag` records and replays correctly
-      (about 71 % valid aligned depth). Decide: pin `pyrealsense2` below 2.56 and Python 3.11
-      for the `realsense` extra, or make the replay not depend on the file's extrinsics.
+      (about 71 % valid aligned depth, checked with a standalone script). **Decided:** the
+      `realsense` extra is pinned to `pyrealsense2>=2.50,<2.56` and `.python-version` is 3.11
+      (2.55.1 has no wheel for 3.12). Still open: `lab record` and `lab replay` through the lab
+      with the pinned version (the camera was not connected when the pin was made). Revisit the
+      pin when a newer SDK replays recordings correctly.
 - [ ] **VLM (`qwen3-vl:2b` through Ollama, 2026-11-09, same PC).** The tag exists and Ollama
       lists Apache licence (confirm on the official model card). This tag is the *thinking*
       variant: it spends tokens on reasoning before the JSON answer, and `think: false` did

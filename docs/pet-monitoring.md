@@ -111,9 +111,11 @@ uv sync --extra realsense
 uv run lab discover
 ```
 
-`lab discover` lists the camera model, firmware, USB type and supported profiles. If
-`pyrealsense2` has no wheel for your Python version, install librealsense from Intel's
-packages or use Python 3.11.
+`lab discover` lists the camera model, firmware, USB type and supported profiles. The
+`realsense` extra is pinned to `pyrealsense2` below 2.56 and the project runs on Python 3.11:
+version 2.59.1 records only `.db3` files and replays them with all-zero aligned depth, while
+2.55.1 records and replays `.bag` files correctly. 2.55.1 has no wheel for Python 3.12 or later,
+so `uv sync --extra realsense` fails there; use the Python in `.python-version`.
 
 Record a few minutes and check the streams:
 

@@ -23,7 +23,8 @@ The geometry, the model contract and the calibration procedure are described in
 
 ## Requirements
 
-- Python 3.11 or newer.
+- Python 3.11 or newer; the optional RealSense support needs Python 3.11 (see
+  [`docs/pet-monitoring.md`](docs/pet-monitoring.md#first-steps-on-the-target-machine)).
 - One of:
   - an ONNX instance-segmentation model that uses the YOLOv8-seg output layout (no model is
     included), or

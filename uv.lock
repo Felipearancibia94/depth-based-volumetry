@@ -42,7 +42,7 @@ requires-dist = [
     { name = "numpy", specifier = ">=1.26" },
     { name = "onnxruntime", specifier = ">=1.17" },
     { name = "opencv-python-headless", specifier = ">=4.8" },
-    { name = "pyrealsense2", marker = "extra == 'realsense'", specifier = ">=2.50" },
+    { name = "pyrealsense2", marker = "extra == 'realsense'", specifier = ">=2.50,<2.56" },
 ]
 provides-extras = ["realsense"]
 
@@ -329,18 +329,11 @@ wheels = [
 
 [[package]]
 name = "pyrealsense2"
-version = "2.59.1.11053"
+version = "2.55.1.6486"
 source = { registry = "https://pypi.org/simple" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ef/7e/6cb87ec4773a4ca1bbe0408d4d47cc6025d907133dd84af553bdc2290a9f/pyrealsense2-2.59.1.11053-cp311-cp311-manylinux1_x86_64.whl", hash = "sha256:04593436a55be82f147a485a261a601e35b49b2a3b25c35e2ad6eb5a775bdde1", size = 13427148, upload-time = "2026-10-11T08:57:38.437Z" },
-    { url = "https://files.pythonhosted.org/packages/7c/92/0067d4a20ca8905dc4e5512fd76799585fc7276e9adf1cc53b9787672816/pyrealsense2-2.59.1.11053-cp311-cp311-win_amd64.whl", hash = "sha256:36bdc6820f27bb522d4eb142764225627bd6fe1b7f8c91f9669c7414d68df3ca", size = 9354522, upload-time = "2026-10-11T08:57:45.973Z" },
-    { url = "https://files.pythonhosted.org/packages/fc/aa/d740d01d8e244a837d2a7937592c2e506229f79f8664c2b9cd7f3ac2565a/pyrealsense2-2.59.1.11053-cp312-cp312-manylinux1_x86_64.whl", hash = "sha256:5da55a75e0af0fa4064e7496289a93a27af2aee0a650ca2b47756eda0c74d578", size = 13423985, upload-time = "2026-10-11T08:57:58.266Z" },
-    { url = "https://files.pythonhosted.org/packages/19/b4/66b1e773d48ea91657b0a8782fe3d9b156ac03b2b87bfc74b352007b6ce5/pyrealsense2-2.59.1.11053-cp312-cp312-manylinux2014_aarch64.whl", hash = "sha256:38310867ca6ba29aefcb313ad65aac7a6d8937f8c9f32d094c8345d904855811", size = 7094617, upload-time = "2026-10-11T08:58:06.608Z" },
-    { url = "https://files.pythonhosted.org/packages/cc/6f/1d71cb077c3565c27c9b891df877001474db99dafedec5957905c8024981/pyrealsense2-2.59.1.11053-cp312-cp312-win_amd64.whl", hash = "sha256:045dfae020a635ba0c2c27e79ea3fa844acb86101344f68ca4c4163beb94b721", size = 9356103, upload-time = "2026-10-11T08:58:14.347Z" },
-    { url = "https://files.pythonhosted.org/packages/6a/b9/ee25f05bf0ab9f70a8c616e64108832839d9e3d67f278d85ae70fd96974a/pyrealsense2-2.59.1.11053-cp313-cp313-manylinux1_x86_64.whl", hash = "sha256:7655a95efbbf0d0b9e1ca80e738c370e370618b76becf721a5f5d7eb28027f17", size = 13422789, upload-time = "2026-10-11T08:58:25.478Z" },
-    { url = "https://files.pythonhosted.org/packages/44/47/26ad2e7b4ff8a279da64efbd3c225d096ae3366121031caaabb63ba4f3f6/pyrealsense2-2.59.1.11053-cp313-cp313-win_amd64.whl", hash = "sha256:273e4dfbcf064ced79f0af6929651d235e48639c6b309ccc49dcef1051df5447", size = 9356143, upload-time = "2026-10-11T08:58:32.065Z" },
-    { url = "https://files.pythonhosted.org/packages/84/b6/541db0e62e0c03a4c05b4ba4532a714cde3e629e60c280f33deb41ad3819/pyrealsense2-2.59.1.11053-cp314-cp314-manylinux1_x86_64.whl", hash = "sha256:461e07ee1e3fd0546f832d82de9b4cea6542b5cc841ef9b5e9f9239ab492366c", size = 13891727, upload-time = "2026-10-11T08:58:43.334Z" },
-    { url = "https://files.pythonhosted.org/packages/5f/f0/38e9e8abb4a634891f7852906070cf998e00a0a0a67275d6a37c8fe2d3a2/pyrealsense2-2.59.1.11053-cp314-cp314-win_amd64.whl", hash = "sha256:997c65e51ee958b14a8000bf38291689c5abc03a42ef243f898543ea715721ae", size = 9637649, upload-time = "2026-10-11T08:58:50.844Z" },
+    { url = "https://files.pythonhosted.org/packages/1e/8b/208170a2bd1c7899b01f57ac4bd1d67436735056f77b7941cb133621c4dc/pyrealsense2-2.55.1.6486-cp311-cp311-manylinux1_x86_64.whl", hash = "sha256:178f92caec6e8e212a7ced66c678dec47462b0b77e929fa576d02eea297bb177", size = 3453751, upload-time = "2024-04-21T06:37:20.389Z" },
+    { url = "https://files.pythonhosted.org/packages/43/0a/f30f3030b59feadbb62b1400475516e800b934623bbbb8092feb0bb2335d/pyrealsense2-2.55.1.6486-cp311-cp311-win_amd64.whl", hash = "sha256:e01939a63bac3e1a4da742f7e1dbc618a4ec03ee0f7b3690ae5d1ad0c983aca8", size = 2781943, upload-time = "2024-04-21T06:37:22.515Z" },
 ]
 
 [[package]]
