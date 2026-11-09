@@ -105,7 +105,7 @@ function renderEvent(e) {
   box.append(el('div', 'muted', 'Measured: ' + (facts || 'none')));
   const it = e.interpretation;
   if (e.interpretation_status === 'done' && it) {
-    box.append(el('div', '', `VLM (${it.model}, ${it.certainty}): ${it.activity} — ${it.description}`));
+    box.append(el('div', '', `VLM (${it.model}, ${it.certainty}): ${it.pet ? it.pet + ' · ' : ''}${it.activity} — ${it.description}`));
     (it.visual_observations || []).forEach((o) => box.append(el('div', 'muted', '• ' + o)));
   } else {
     box.append(el('div', 'muted', 'Interpretation: ' + e.interpretation_status));

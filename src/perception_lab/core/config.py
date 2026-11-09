@@ -100,6 +100,22 @@ class RulesConfig:
     proximity_min_s: float = 5.0
 
 
+UNKNOWN_PET = "unknown"  # the VLM's answer when no listed pet is clearly shown
+
+
+@dataclass(frozen=True)
+class PetConfig:
+    """A household animal the VLM may name. The name is a label, not a recognition model."""
+
+    name: str
+    species: Literal["cat", "dog"]
+    description: str  # visible features only, e.g. the coat
+
+    def __post_init__(self) -> None:
+        if not self.name.strip() or not self.description.strip():
+            raise ConfigError("a pet needs a name and a description")
+
+
 @dataclass(frozen=True)
 class VLMConfig:
     enabled: bool = False
@@ -120,10 +136,17 @@ class VLMConfig:
     # ``openai_compat``: set the context when starting that server (``llama-server -c``).
     num_ctx: int = 8192
     allow_remote: bool = False  # refuse non-loopback endpoints unless explicitly allowed
+    # Household pets the VLM may name. Empty = the answer has no ``pet`` field.
+    pets: tuple[PetConfig, ...] = ()
 
     def __post_init__(self) -> None:
         if self.num_ctx < 1:
             raise ConfigError("num_ctx must be a positive number of tokens")
+        names = [p.name for p in self.pets]
+        if len(set(names)) != len(names):
+            raise ConfigError("vlm.pets names must be unique")
+        if UNKNOWN_PET in names:
+            raise ConfigError(f"vlm.pets: {UNKNOWN_PET!r} is reserved for 'not identified'")
 
 
 @dataclass(frozen=True)

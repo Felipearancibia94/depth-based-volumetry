@@ -78,6 +78,24 @@ keep_alive = "5m"
 num_ctx = 8192
 allow_remote = false
 
+# Household pets the VLM may name. With at least one, its answer gets a short "pet" field
+# holding one of these names or "unknown". The name is a label for what is visible (species
+# and coat); it is not a recognition model. Describe visible features only.
+# [[vlm.pets]]
+# name = "Negrita"
+# species = "cat"
+# description = "a cat with a fully black coat"
+#
+# [[vlm.pets]]
+# name = "Nube"
+# species = "cat"
+# description = "a cat with a tricolor coat (black, orange and white patches)"
+#
+# [[vlm.pets]]
+# name = "Leia"
+# species = "dog"
+# description = "a dog"
+
 [storage]
 db_path = "data/lab.db"
 media_dir = "data/media"

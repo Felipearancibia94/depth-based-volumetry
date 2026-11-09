@@ -14,9 +14,9 @@ from numpy.typing import NDArray
 from perception_lab.core.config import VLMConfig
 from perception_lab.events.evidence import BufferedFrame, crop, fit_max_side, montage
 from perception_lab.events.model import PetEvent
-from perception_lab.vlm.prompts import PROMPT_VERSION, RETRY_SUFFIX, build_prompt
+from perception_lab.vlm.prompts import RETRY_SUFFIX, build_prompt, prompt_version
 from perception_lab.vlm.providers import ProviderError, VLMProvider, encode_jpeg
-from perception_lab.vlm.schema import JSON_SCHEMA, InterpretationError, parse_interpretation
+from perception_lab.vlm.schema import InterpretationError, build_json_schema, parse_interpretation
 
 
 @dataclass
@@ -57,17 +57,19 @@ class Interpreter:
         if not images:
             return InterpretationResult("skipped", error="no evidence frames")
         jpegs = [encode_jpeg(i) for i in images]
-        base_prompt = build_prompt(event, times_s, montage=self.config.montage)
+        pets = self.config.pets
+        schema = build_json_schema(pets)
+        base_prompt = build_prompt(event, times_s, montage=self.config.montage, pets=pets)
         prompt, total_latency, raw, error = base_prompt, 0.0, None, None
         for attempt in (1, 2):
             try:
-                reply = self.provider.complete(prompt, jpegs, JSON_SCHEMA)
+                reply = self.provider.complete(prompt, jpegs, schema)
             except ProviderError as exc:
                 return InterpretationResult("failed", error=str(exc), attempts=attempt)
             total_latency += reply.latency_s
             raw = reply.text
             try:
-                parsed = parse_interpretation(reply.text)
+                parsed = parse_interpretation(reply.text, pets)
             except InterpretationError as exc:
                 error = str(exc)
                 prompt = base_prompt + RETRY_SUFFIX.format(error=error)
@@ -76,7 +78,7 @@ class Interpreter:
                 **parsed.to_dict(),
                 "model": self.provider.model,
                 "provider": self.provider.name,
-                "prompt_version": PROMPT_VERSION,
+                "prompt_version": prompt_version(pets),
                 "image_count": len(jpegs),
                 "montage": self.config.montage,
                 "latency_s": round(total_latency, 3),

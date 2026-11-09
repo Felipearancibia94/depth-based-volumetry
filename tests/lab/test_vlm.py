@@ -5,18 +5,23 @@ import threading
 import numpy as np
 import pytest
 
-from perception_lab.core.config import VLMConfig
+from perception_lab.core.config import PetConfig, VLMConfig
 from perception_lab.events.evidence import BufferedFrame
 from perception_lab.events.model import PetEvent
 from perception_lab.vlm.interpreter import Interpreter, VLMWorker, evidence_images
-from perception_lab.vlm.prompts import build_prompt
+from perception_lab.vlm.prompts import build_prompt, prompt_version
 from perception_lab.vlm.providers import (
     OllamaProvider,
     OpenAICompatProvider,
     ProviderError,
     require_loopback,
 )
-from perception_lab.vlm.schema import JSON_SCHEMA, InterpretationError, parse_interpretation
+from perception_lab.vlm.schema import (
+    JSON_SCHEMA,
+    InterpretationError,
+    build_json_schema,
+    parse_interpretation,
+)
 
 GOOD = {
     "activity": "eating",
@@ -213,3 +218,57 @@ def test_worker_processes_drops_oldest_and_reports():
     assert ("e1", "skipped") in results
     assert {("e0", "done"), ("e2", "done")} <= set(results)
     assert worker.stats["dropped"] == 1
+
+
+PETS = (
+    PetConfig("Negrita", "cat", "a cat with a fully black coat"),
+    PetConfig("Nube", "cat", "a cat with a tricolor coat"),
+    PetConfig("Leia", "dog", "a dog"),
+)
+
+
+def test_without_pets_nothing_about_pets_is_asked():
+    prompt = build_prompt(_event(), [5.0, 6.0], montage=False)
+    assert "household" not in prompt and '"pet"' not in prompt
+    assert build_json_schema() is JSON_SCHEMA and prompt_version() == "pets_v1"
+    assert "pet" not in parse_interpretation(json.dumps(GOOD)).to_dict()
+    with pytest.raises(InterpretationError, match="unexpected"):
+        parse_interpretation(json.dumps({**GOOD, "pet": "Nube"}))
+
+
+def test_prompt_lists_the_pets_and_asks_for_a_short_value():
+    prompt = build_prompt(_event(), [5.0, 6.0], montage=False, pets=PETS)
+    assert "- Negrita (cat): a cat with a fully black coat" in prompt
+    assert "- Leia (dog): a dog" in prompt
+    assert '"pet": the name of the listed pet' in prompt and '"unknown"' in prompt
+    assert prompt_version(PETS) == "pets_v1+pet"
+
+
+def test_schema_restricts_pet_to_the_configured_names_and_unknown():
+    schema = build_json_schema(PETS)
+    assert schema["properties"]["pet"]["enum"] == ["Negrita", "Nube", "Leia", "unknown"]
+    assert "pet" in schema["required"]
+    assert "pet" not in JSON_SCHEMA["properties"]  # the base schema is not modified
+
+
+def test_parse_validates_pet():
+    ok = parse_interpretation(json.dumps({**GOOD, "pet": "Nube"}), PETS)
+    assert ok.pet == "Nube" and ok.to_dict()["pet"] == "Nube"
+    assert parse_interpretation(json.dumps({**GOOD, "pet": "unknown"}), PETS).pet == "unknown"
+    with pytest.raises(InterpretationError, match="not a configured pet"):
+        parse_interpretation(json.dumps({**GOOD, "pet": "Rex"}), PETS)
+    with pytest.raises(InterpretationError, match="missing"):
+        parse_interpretation(json.dumps(GOOD), PETS)
+
+
+def test_interpreter_asks_for_and_stores_the_pet():
+    config = VLMConfig(pets=PETS)
+    runtime = FakeRuntime(json.dumps({**GOOD, "pet": "Negrita"}))
+    result = Interpreter(OllamaProvider(config, runtime), config).interpret(
+        _event(), _images(), [5.0, 6.0]
+    )
+    payload = runtime.requests[0][1]
+    assert payload["format"]["properties"]["pet"]["enum"][-1] == "unknown"
+    assert "Nube (cat)" in payload["messages"][0]["content"]
+    assert result.interpretation["pet"] == "Negrita"
+    assert result.interpretation["prompt_version"] == "pets_v1+pet"

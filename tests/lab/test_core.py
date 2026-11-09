@@ -62,6 +62,13 @@ def test_partial_config_keeps_defaults():
         ({"source": {"fps": "15"}}, "integer"),
         ({"vlm": {"enabled": 1}}, "true or false"),
         ({"vlm": {"num_ctx": 0}}, "positive"),
+        ({"vlm": {"pets": [{"name": "A", "species": "cat", "description": "x"}] * 2}}, "unique"),
+        (
+            {"vlm": {"pets": [{"name": "unknown", "species": "cat", "description": "x"}]}},
+            "reserved",
+        ),
+        ({"vlm": {"pets": [{"name": "A", "species": "cat", "description": " "}]}}, "needs a name"),
+        ({"vlm": {"pets": [{"name": "A", "species": "bird", "description": "x"}]}}, "one of"),
         ({"vlm": {"num_ctx": "8192"}}, "integer"),
         ({"detector": {"class_ids": [15]}}, "equal length"),
         ({"rules": []}, "must be a table"),
@@ -89,3 +96,13 @@ def test_example_config_matches_defaults():
 
     example = Path(__file__).parents[2] / "examples" / "lab.example.toml"
     assert load_config(example) == LabConfig()
+
+
+def test_pets_load_and_survive_a_dump_round_trip(tmp_path):
+    cfg = config_from_mapping(
+        {"vlm": {"pets": [{"name": "Nube", "species": "cat", "description": "a tricolor cat"}]}}
+    )
+    assert cfg.vlm.pets[0].name == "Nube" and cfg.vlm.pets[0].species == "cat"
+    path = tmp_path / "lab.toml"
+    path.write_text(dump_config(cfg), encoding="utf-8")
+    assert load_config(path) == cfg
