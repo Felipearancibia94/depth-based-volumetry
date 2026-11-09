@@ -49,8 +49,8 @@ Add dependencies with `uv add` / `uv add --dev` so `uv.lock` stays in sync. Neve
 - Git commits, pushes, branch changes and remote changes need explicit user authorization.
 - Never add credentials, company or client names, or non-loopback endpoints to the
   repository. Loopback defaults (`127.0.0.1`, `localhost`) in examples are allowed.
-- Never commit model binaries (`*.onnx`), captures, recordings, databases or real calibration
-  files.
+- Never commit model weights (`*.onnx`, `*.pt`, `*.engine`, `*.gguf`, anything under
+  `models/`), captures, recordings, databases or real calibration files.
 - Tests use synthetic data only and need no network, camera or model.
 - Do not claim real-model inference, RealSense capture or real-world accuracy unless it was
   actually run on that hardware or model.

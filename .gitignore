@@ -13,12 +13,19 @@ dist/
 
 # Data: models, captures, outputs, real calibration (the example lives in examples/)
 *.onnx
+*.pt
+*.pth
+*.engine
+*.gguf
+*.safetensors
+/models/
 /data/
 /outputs/
 calibration.toml
 
 # Lab: recordings, event databases, media, local configs and scene calibration
 *.bag
+*.db3
 *.db
 *.db-wal
 *.db-shm
