@@ -28,11 +28,15 @@ CREATE TABLE IF NOT EXISTS events (
     timestamp_end_s REAL NOT NULL,
     detected_at TEXT NOT NULL,
     created_unix REAL NOT NULL,
-    payload TEXT NOT NULL
+    payload TEXT NOT NULL,
+    pet TEXT
 );
 CREATE INDEX IF NOT EXISTS events_created ON events (created_unix);
 CREATE INDEX IF NOT EXISTS events_rule ON events (rule);
 """
+
+# Run after the table exists; databases written before the column existed get it here.
+_PET_INDEX = "CREATE INDEX IF NOT EXISTS events_pet ON events (pet)"
 
 
 class EventStore:
@@ -46,8 +50,21 @@ class EventStore:
         with self._lock:
             self._db.execute("PRAGMA journal_mode=WAL")
             self._db.executescript(_SCHEMA)
+            self._add_pet_column()
+            self._db.execute(_PET_INDEX)
             self.has_fts = self._init_fts()
             self._db.commit()
+
+    def _add_pet_column(self) -> None:
+        """Add ``pet`` to a database created before it existed, filled from the payload."""
+        columns = {row["name"] for row in self._db.execute("PRAGMA table_info(events)")}
+        if "pet" in columns:
+            return
+        self._db.execute("ALTER TABLE events ADD COLUMN pet TEXT")
+        self._db.execute(
+            "UPDATE events SET pet = json_extract(payload, '$.interpretation.pet') "
+            "WHERE json_extract(payload, '$.interpretation_status') = 'done'"
+        )
 
     def _init_fts(self) -> bool:
         try:
@@ -63,7 +80,9 @@ class EventStore:
     def add(self, event: PetEvent, created_unix: float | None = None) -> None:
         with self._lock:
             self._db.execute(
-                "INSERT INTO events VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                "INSERT INTO events (event_id, camera_id, rule, hypothesis, activity, "
+                "interpretation_status, review_status, zone, timestamp_start_s, timestamp_end_s, "
+                "detected_at, created_unix, payload, pet) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 (
                     event.event_id,
                     event.camera_id,
@@ -78,6 +97,7 @@ class EventStore:
                     event.detected_at,
                     time.time() if created_unix is None else created_unix,
                     json.dumps(event.to_dict()),
+                    event.pet,
                 ),
             )
             self._index(event)
@@ -87,13 +107,14 @@ class EventStore:
         with self._lock:
             cur = self._db.execute(
                 "UPDATE events SET activity=?, interpretation_status=?, review_status=?, "
-                "timestamp_end_s=?, payload=? WHERE event_id=?",
+                "timestamp_end_s=?, payload=?, pet=? WHERE event_id=?",
                 (
                     event.activity,
                     event.interpretation_status,
                     event.review_status,
                     event.timestamp_end_s,
                     json.dumps(event.to_dict()),
+                    event.pet,
                     event.event_id,
                 ),
             )
@@ -137,6 +158,7 @@ class EventStore:
                 event.rule,
                 event.hypothesis,
                 event.zone or "",
+                event.pet or "",
                 " ".join(event.animal_classes),
                 interp.get("activity", ""),
                 interp.get("description", ""),
@@ -162,6 +184,7 @@ class EventStore:
         limit: int = 50,
         offset: int = 0,
         rule: str | None = None,
+        pet: str | None = None,
         created_after_unix: float | None = None,
         created_before_unix: float | None = None,
     ) -> list[PetEvent]:
@@ -169,6 +192,9 @@ class EventStore:
         if rule:
             sql += " AND rule=?"
             args.append(rule)
+        if pet:
+            sql += " AND pet=?"
+            args.append(pet)
         if created_after_unix is not None:
             sql += " AND created_unix >= ?"
             args.append(created_after_unix)

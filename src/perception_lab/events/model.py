@@ -93,6 +93,13 @@ class PetEvent:
         return None
 
     @property
+    def pet(self) -> str | None:
+        """The VLM's pet name (or ``"unknown"``) when interpreted and asked, otherwise ``None``."""
+        if self.interpretation_status == "done" and self.interpretation:
+            return self.interpretation.get("pet")
+        return None
+
+    @property
     def duration_s(self) -> float:
         return self.timestamp_end_s - self.timestamp_start_s
 

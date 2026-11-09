@@ -1,3 +1,5 @@
+import json
+import sqlite3
 import time
 
 import numpy as np
@@ -89,3 +91,72 @@ def test_purge_media_and_events(store, tmp_path):
     assert (media / "not-a-day").exists()
     assert report.events_removed == 1 and store.get("old") is None
     assert store.search("eating")[0].event_id == "new"
+
+
+def _interpret(store, event_id, pet, activity="resting_or_sleeping"):
+    event = store.get(event_id)
+    event.interpretation = {"activity": activity, "description": "A cat rests.", "pet": pet}
+    event.interpretation_status = "done"
+    store.update(event)
+
+
+def test_pet_column_is_filled_when_the_interpretation_arrives(store, tmp_path):
+    store.add(_event("e1"))
+    store.add(_event("e2"))
+    store.add(_event("e3"))
+    with sqlite3.connect(tmp_path / "lab.db") as raw:
+        assert raw.execute("SELECT pet FROM events WHERE event_id='e1'").fetchone()[0] is None
+    _interpret(store, "e1", "Nube")
+    _interpret(store, "e2", "unknown")
+    assert store.get("e1").pet == "Nube"
+    assert [e.event_id for e in store.list(pet="Nube")] == ["e1"]
+    assert [e.event_id for e in store.list(pet="unknown")] == ["e2"]
+    assert len(store.list()) == 3 and store.list(pet="Leia") == []
+
+
+def test_failed_interpretation_leaves_no_pet(store):
+    store.add(_event("e1"))
+    event = store.get("e1")
+    event.interpretation = {"error": "timeout", "pet": "Nube"}
+    event.interpretation_status = "failed"
+    store.update(event)
+    assert store.get("e1").pet is None and store.list(pet="Nube") == []
+
+
+def test_search_finds_the_pet_name(store):
+    store.add(_event("e1"))
+    store.add(_event("e2"))
+    _interpret(store, "e1", "Negrita")
+    assert [e.event_id for e in store.search("Negrita")] == ["e1"]
+
+
+def test_old_database_gets_the_pet_column_and_backfill(tmp_path):
+    path = tmp_path / "old.db"
+    done = _event("e1")
+    done.interpretation = {"activity": "eating", "description": "x", "pet": "Leia"}
+    done.interpretation_status = "done"
+    pending = _event("e2")
+    with sqlite3.connect(path) as raw:
+        raw.execute(
+            "CREATE TABLE events (event_id TEXT PRIMARY KEY, camera_id TEXT NOT NULL, "
+            "rule TEXT NOT NULL, hypothesis TEXT NOT NULL, activity TEXT, "
+            "interpretation_status TEXT NOT NULL, review_status TEXT NOT NULL, zone TEXT, "
+            "timestamp_start_s REAL NOT NULL, timestamp_end_s REAL NOT NULL, "
+            "detected_at TEXT NOT NULL, created_unix REAL NOT NULL, payload TEXT NOT NULL)"
+        )
+        for i, e in enumerate((done, pending)):
+            raw.execute(
+                "INSERT INTO events VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                (e.event_id, e.camera_id, e.rule, e.hypothesis, e.activity,
+                 e.interpretation_status, e.review_status, e.zone, e.timestamp_start_s,
+                 e.timestamp_end_s, e.detected_at, float(i), json.dumps(e.to_dict())),
+            )  # fmt: skip
+    store = EventStore(path)
+    try:
+        assert store.count() == 2
+        assert [e.event_id for e in store.list(pet="Leia")] == ["e1"]
+        store.add(_event("e3"))  # inserts still work on the migrated table
+        assert store.count() == 3
+    finally:
+        store.close()
+    EventStore(path).close()  # opening again is a no-op
