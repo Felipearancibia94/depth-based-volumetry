@@ -161,6 +161,23 @@ numbers, not from model file sizes:
   latency is acceptable; alerts never wait for the VLM;
 - check the model licence on its official model card before relying on it.
 
+### Naming the household pets
+
+List the animals in `[[vlm.pets]]` (name, species, a description of visible features such as
+the coat; see `examples/lab.example.toml`). With at least one entry the prompt lists them, the
+schema requires a short `pet` value, and the answer must be one of the configured names or
+`unknown` (prompt version `pets_v1+pet`). Without entries nothing changes. The value is stored
+in `interpretation`, next to the activity: it is the model's reading of the image, not a
+measurement, and the lab has no recognition model. It adds about 80 prompt tokens and a few
+output tokens per request.
+
+What was checked (2026-11-09, `qwen3-vl:2b-instruct`, saved crops, through the lab's own
+code): a black cat named correctly from four crops, a tricolor cat named correctly from one
+crop, and a room with no animal named as a pet with certainty `high`. So the value can be wrong
+when the detection itself is wrong, and `certainty` does not warn about it; treat `pet` as a
+hint and keep the detector score next to it. A dog was not tested (no image), and the
+descriptions of the animals decide how well the cats are told apart.
+
 ### Detector
 
 Export a COCO-trained detector with the YOLOv8 output layout to ONNX (detection or

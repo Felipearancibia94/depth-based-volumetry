@@ -70,6 +70,20 @@ Run on the target machine and keep the outputs ([`docs/pet-monitoring.md`](docs/
       6 answers valid; whole-GPU peak 4.25 GB. Still open: change the default model tag from
       `qwen3-vl:2b` to `qwen3-vl:2b-instruct`, compare 2 against 4 images and the 4B model on
       labelled cat events, and decide how many images per event given about 10 s per image.
+- [x] **Pet names (`vlm.pets`, answer field `pet`).** Implemented with a configurable list, a
+      constrained value (names or `unknown`) and tests. Through the lab's code on saved crops:
+      Negrita and Nube named correctly; a room without any animal was named "Negrita" with
+      certainty high. Not yet seen live: the room was dark when tried (mean brightness 5.8 of
+      255, no detections in 600 frames), a dog was not tested, and the model's certainty is not
+      a safeguard. Open: repeat live with light on and a labelled set, try the 4B model, and
+      consider using the detector score as a gate before trusting a name.
+      Orientation check on one saved crop per animal, four orientations each: the VLM named
+      the right pet in 8 of 8; the detector did not behave the same way: the tricolor cat lying
+      on its side was "dog" 0.73 as captured (model l) and "cat" 0.93-0.97 when turned or
+      flipped, while the black cat sitting upright dropped from 0.92 to 0.33-0.50 when upside
+      down. Mount the camera upright and expect lying animals to be the weak case.
+- [ ] **Night.** The colour stream is almost black in the dark, so the detector sees nothing;
+      the D435 has infrared streams, but no source or detector path uses them yet.
 - [ ] **Detector (multi-class YOLO-layout exports in five sizes, 640 input, synthetic frames, same PC).** CPU
       (`onnxruntime` 1.31): n 37 ms, s 82 ms, m 235 ms, l 281 ms, x 577 ms (p50). GPU through
       DirectML with the VLM already loaded: n 9 ms, s 14 ms, m 27 ms, l 32-34 ms, x 59-63 ms
