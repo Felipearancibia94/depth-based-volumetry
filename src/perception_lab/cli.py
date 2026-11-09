@@ -160,7 +160,11 @@ def _run_run(args: argparse.Namespace) -> int:
         from perception_lab.web.server import DashboardState, start_server
 
         state = DashboardState(
-            app.store, config.storage.media_dir, app.pipeline.scene, app.pipeline
+            app.store,
+            config.storage.media_dir,
+            app.pipeline.scene,
+            app.pipeline,
+            pet_names=tuple(p.name for p in config.vlm.pets),
         )
         server, _ = start_server(
             state, config.web.host, config.web.port, allow_remote=config.web.allow_remote
@@ -194,7 +198,9 @@ def _run_serve(args: argparse.Namespace) -> int:
     config = load_with_overrides(args)
     store = EventStore(config.storage.db_path)
     scene = load_scene(config.spatial.scene_path) if config.spatial.scene_path else None
-    state = DashboardState(store, config.storage.media_dir, scene)
+    state = DashboardState(
+        store, config.storage.media_dir, scene, pet_names=tuple(p.name for p in config.vlm.pets)
+    )
     server, thread = start_server(
         state, config.web.host, config.web.port, allow_remote=config.web.allow_remote
     )

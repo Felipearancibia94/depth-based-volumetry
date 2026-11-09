@@ -64,7 +64,8 @@ INDEX_HTML = """<!doctype html>
   <section>
     <div class="row" style="justify-content:space-between">
       <h2>Events</h2>
-      <form id="search" class="row"><input id="q" placeholder="search descriptions">
+      <form id="search" class="row"><select id="pet" hidden></select>
+        <input id="q" placeholder="search descriptions">
         <button>Search</button></form>
     </div>
     <div id="events" class="muted">loading…</div>
@@ -131,8 +132,22 @@ function renderEvent(e) {
   return box;
 }
 
+async function loadPets() {
+  const data = await getJSON('/api/pets');
+  const names = (data && data.pets) || [];
+  if (!names.length) return;
+  const sel = $('pet');
+  for (const [value, text] of [['', 'all pets'], ...names.map((n) => [n, n]), ['unknown', 'unknown']]) {
+    const o = el('option', '', text); o.value = value; sel.append(o);
+  }
+  sel.hidden = false;
+  sel.onchange = () => { $('q').value = ''; loadEvents(); };
+}
+
 async function loadEvents(q) {
-  const list = await getJSON(q ? '/api/search?q=' + encodeURIComponent(q) : '/api/events?limit=50');
+  const pet = $('pet').value;
+  const list = await getJSON(q ? '/api/search?q=' + encodeURIComponent(q)
+    : '/api/events?limit=50' + (pet ? '&pet=' + encodeURIComponent(pet) : ''));
   const root = $('events'); root.textContent = ''; root.className = '';
   if (!list || !list.length) { root.className = 'muted'; root.textContent = 'No events.'; return; }
   list.forEach((e) => root.append(renderEvent(e)));
@@ -148,7 +163,7 @@ $('live').addEventListener('click', (ev) => {
 });
 $('clear').onclick = () => { points = []; $('zone').textContent = '# no points yet'; };
 $('search').onsubmit = (ev) => { ev.preventDefault(); loadEvents($('q').value.trim()); };
-refreshStatus(); loadEvents();
+refreshStatus(); loadPets(); loadEvents();
 setInterval(refreshStatus, 1000); setInterval(() => { if (!$('q').value) loadEvents(); }, 5000);
 </script>
 </body>

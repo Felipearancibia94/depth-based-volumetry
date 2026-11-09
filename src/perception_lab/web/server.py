@@ -30,6 +30,7 @@ class DashboardState:
     media_dir: str
     scene: SceneCalibration | None = None
     pipeline: Any = None  # PetPipeline when running live
+    pet_names: tuple[str, ...] = ()  # configured household pets, for the dashboard filter
     allowed_hosts: frozenset[str] = frozenset({"127.0.0.1", "localhost", "::1"})
 
 
@@ -94,8 +95,11 @@ def make_handler(state: DashboardState) -> type[BaseHTTPRequestHandler]:
                 limit = _int(query, "limit", 50, 1, 500)
                 offset = _int(query, "offset", 0, 0, 10**9)
                 rule = query.get("rule", [None])[0]
-                events = state.store.list(limit=limit, offset=offset, rule=rule)
+                pet = query.get("pet", [None])[0]
+                events = state.store.list(limit=limit, offset=offset, rule=rule, pet=pet)
                 return self._json([e.to_dict() for e in events])
+            if path == "/api/pets":
+                return self._json({"pets": list(state.pet_names)})
             if path == "/api/search":
                 q = query.get("q", [""])[0]
                 return self._json([e.to_dict() for e in state.store.search(q, limit=100)])

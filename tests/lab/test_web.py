@@ -31,7 +31,16 @@ def dashboard(tmp_path):
     )  # fmt: skip
     store.add(event)
     scene = SceneCalibration(zones=(Zone("bowl", ((0, 0), (1, 0), (1, 1)), ("food",)),))
-    state = DashboardState(store, str(media), scene, _FakePipeline())
+    named = PetEvent(
+        "e2", "cam", "stationary", "resting_or_sleeping", (4,), ("cat",), 40.0, 70.0,
+        "2026-01-01T00:01:00", None, {"duration_s": 30.0},
+        interpretation={"activity": "resting_or_sleeping", "description": "rests", "pet": "Nube"},
+        interpretation_status="done",
+    )  # fmt: skip
+    store.add(named)
+    state = DashboardState(
+        store, str(media), scene, _FakePipeline(), pet_names=("Negrita", "Nube", "Leia")
+    )
     server, _ = start_server(state, "127.0.0.1", 0)
     yield server.server_address[1], paths[0]
     server.shutdown()
@@ -53,9 +62,9 @@ def test_page_status_events_and_search(dashboard):
     assert status == 200 and ctype.startswith("text/html") and b"Pet Monitor" in body
     status, _, body = _request(port, "GET", "/api/status")
     data = json.loads(body)
-    assert data["events_total"] == 1 and data["pipeline"]["frames"] == 10
+    assert data["events_total"] == 2 and data["pipeline"]["frames"] == 10
     events = json.loads(_request(port, "GET", "/api/events?limit=5")[2])
-    assert [e["event_id"] for e in events] == ["e1"]
+    assert sorted(e["event_id"] for e in events) == ["e1", "e2"]
     assert json.loads(_request(port, "GET", "/api/search?q=bowl")[2])[0]["event_id"] == "e1"
     assert json.loads(_request(port, "GET", "/api/events/e1")[2])["zone"] == "bowl"
     assert _request(port, "GET", "/api/events/nope")[0] == 404
@@ -92,3 +101,14 @@ def test_non_loopback_bind_refused_without_opt_in(tmp_path):
     with pytest.raises(ValueError, match="no authentication"):
         start_server(DashboardState(store, str(tmp_path)), "0.0.0.0", 0)
     store.close()
+
+
+def test_pet_filter_and_pet_list(dashboard):
+    port, _ = dashboard
+    pets = json.loads(_request(port, "GET", "/api/pets")[2])
+    assert pets == {"pets": ["Negrita", "Nube", "Leia"]}
+    nube = json.loads(_request(port, "GET", "/api/events?pet=Nube")[2])
+    assert [e["event_id"] for e in nube] == ["e2"]
+    assert json.loads(_request(port, "GET", "/api/events?pet=Leia")[2]) == []
+    status, _, body = _request(port, "GET", "/")
+    assert b'id="pet"' in body
