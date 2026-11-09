@@ -148,6 +148,14 @@ schema, the answers, errors, peak GPU memory (whole GPU, via `nvidia-smi`) and O
 `size_vram`. Repeat with the 4B quantised model (`--model <tag>`). Decide from these
 numbers, not from model file sizes:
 
+- if answers come back empty or cut, check `vlm.num_ctx` (default 8192) before blaming the
+  model: the prompt costs about 1100 tokens per image and Ollama's own default of 4096 tokens
+  is exhausted by three images. `num_ctx` applies to Ollama only; set the context of
+  `llama-server` when you start it;
+- prefer a non-reasoning tag such as `qwen3-vl:2b-instruct` over the plain `2b` tag, which is
+  the reasoning variant and spends tokens thinking before the JSON;
+- Ollama caches the prompt prefix, so repeating one request makes it look fast; the first
+  request with new images is the one that matters for latency;
 - if multi-image requests fail or are ignored, set `vlm.montage = true`;
 - keep the model whose peak memory leaves room for the detector (6 GB card) and whose
   latency is acceptable; alerts never wait for the VLM;
@@ -161,6 +169,18 @@ segmentation; segmentation masks improve depth sampling) and measure it:
 ```bash
 uv run lab bench detector --source bag --path data/recordings/first.bag --frames 200
 ```
+
+`detector.class_ids` must match the model's own class list: the defaults (15 and 16) are the
+COCO ids of cat and dog, and a model with another vocabulary silently selects other classes
+(a model with a much larger vocabulary was checked here: cat = 55 and dog = 86, and ids 15
+and 16 were two unrelated classes). Read the names from the exported file before configuring it:
+
+```bash
+uv run python -c "import ast, onnxruntime as ort; s = ort.InferenceSession('model.onnx'); print(ast.literal_eval(s.get_modelmeta().custom_metadata_map['names']))"
+```
+
+Models whose export has a different output layout (for example end-to-end, NMS-free outputs)
+are not decoded by the lab; export with the YOLOv8 layout (`end2end=False` in Ultralytics).
 
 Ultralytics weights are AGPL-3.0; check the licence of whatever weights you use. Set
 `detector.kind = "yolov8_onnx"` and `detector.model_path` in `lab.toml`.
