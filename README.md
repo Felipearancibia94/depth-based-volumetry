@@ -132,6 +132,12 @@ calibration, the evaluation protocol and limitations are in
 The diagram is also available as an editable
 [Excalidraw file](docs/diagrams/pet-monitoring-architecture.excalidraw).
 
+The overview below adds the hardware, models and ToDo list. Green boxes are implemented and
+tested on synthetic data only; orange ones need a real camera, detector or VLM to validate
+([editable source](docs/diagrams/home-perception-lab-overview.excalidraw)).
+
+![Home perception lab overview: architecture, hardware, models and ToDo](docs/diagrams/home-perception-lab-overview.png)
+
 Try it without any hardware on the built-in synthetic scene:
 
 ```bash
@@ -175,6 +181,10 @@ uv run ruff format --check .
 
 The tests use only synthetic arrays and tensors; they need no network, camera or model.
 
+Package map and dependency rules are in [ARCHITECTURE.md](ARCHITECTURE.md), design decisions
+in [docs/adr](docs/adr/README.md). Contributors using Claude Code get the project rules from
+`CLAUDE.md` and `.claude/`.
+
 ## Limitations
 
 - One box per measurement.
@@ -187,7 +197,7 @@ The tests use only synthetic arrays and tensors; they need no network, camera or
 
 ## Future work
 
-An HTTP API, a Docker image and a calibration helper.
+See [ROADMAP.md](ROADMAP.md) for current status and next steps.
 
 ## Licence
 

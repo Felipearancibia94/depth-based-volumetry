@@ -18,8 +18,8 @@ fps = 5
 synthetic_seconds = 40.0
 
 [storage]
-db_path = "{tmp_path / "lab.db"}"
-media_dir = "{tmp_path / "media"}"
+db_path = "{(tmp_path / "lab.db").as_posix()}"
+media_dir = "{(tmp_path / "media").as_posix()}"
 
 [notify]
 desktop = false
