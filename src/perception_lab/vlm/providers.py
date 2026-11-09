@@ -116,7 +116,7 @@ class OllamaProvider:
             ],
             "stream": False,
             "format": schema,
-            "options": {"temperature": cfg.temperature},
+            "options": {"temperature": cfg.temperature, "num_ctx": cfg.num_ctx},
             "keep_alive": cfg.keep_alive,
         }
         start = time.perf_counter()

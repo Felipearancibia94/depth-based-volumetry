@@ -75,6 +75,7 @@ timeout_s = 120.0
 max_requests_per_minute = 4.0
 queue_size = 8
 keep_alive = "5m"
+num_ctx = 8192
 allow_remote = false
 
 [storage]

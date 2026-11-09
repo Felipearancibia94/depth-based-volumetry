@@ -110,8 +110,15 @@ def test_ollama_request_shape():
     assert url == "http://127.0.0.1:11434/api/chat"
     assert payload["format"] == JSON_SCHEMA and payload["stream"] is False
     assert payload["options"]["temperature"] == 0.0
+    assert payload["options"]["num_ctx"] == 8192
     assert base64.b64decode(payload["messages"][0]["images"][0]) == b"\xff\xd8x"
     assert reply.meta == {"eval_count": 42}
+
+
+def test_ollama_sends_the_configured_context_window():
+    runtime = FakeRuntime(json.dumps(GOOD))
+    OllamaProvider(VLMConfig(num_ctx=16384), runtime).complete("hi", [b"\xff\xd8x"], JSON_SCHEMA)
+    assert runtime.requests[0][1]["options"]["num_ctx"] == 16384
 
 
 def test_openai_compat_request_shape():

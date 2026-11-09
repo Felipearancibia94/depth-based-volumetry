@@ -115,7 +115,15 @@ class VLMConfig:
     max_requests_per_minute: float = 4.0
     queue_size: int = 8
     keep_alive: str = "5m"
+    # Ollama context window in tokens: prompt (about 1100 per image) plus the answer must fit.
+    # Ollama's own default of 4096 cuts answers with three or more images. Not used by
+    # ``openai_compat``: set the context when starting that server (``llama-server -c``).
+    num_ctx: int = 8192
     allow_remote: bool = False  # refuse non-loopback endpoints unless explicitly allowed
+
+    def __post_init__(self) -> None:
+        if self.num_ctx < 1:
+            raise ConfigError("num_ctx must be a positive number of tokens")
 
 
 @dataclass(frozen=True)

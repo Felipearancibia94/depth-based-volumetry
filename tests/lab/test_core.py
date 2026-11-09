@@ -61,6 +61,8 @@ def test_partial_config_keeps_defaults():
         ({"source": {"kind": "webcam"}}, "must be one of"),
         ({"source": {"fps": "15"}}, "integer"),
         ({"vlm": {"enabled": 1}}, "true or false"),
+        ({"vlm": {"num_ctx": 0}}, "positive"),
+        ({"vlm": {"num_ctx": "8192"}}, "integer"),
         ({"detector": {"class_ids": [15]}}, "equal length"),
         ({"rules": []}, "must be a table"),
     ],
