@@ -128,13 +128,30 @@ function renderEvent(e) {
     };
     review.append(b);
   }
+  if (petNames.length) {
+    const fix = el('select');
+    for (const n of ['', ...petNames, 'unknown']) {
+      const o = el('option', '', n ? 'it is ' + n : 'correct pet…'); o.value = n; fix.append(o);
+    }
+    fix.onchange = async () => {
+      if (!fix.value) return;
+      await fetch(`/api/events/${e.event_id}/review`, {method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({status: 'confirmed', label: e.review_label, pet: fix.value})});
+      loadEvents();
+    };
+    review.append(fix);
+    if (e.review_pet) review.append(el('span', 'tag', 'owner: ' + e.review_pet));
+  }
   box.append(review);
   return box;
 }
 
+let petNames = [];
 async function loadPets() {
   const data = await getJSON('/api/pets');
   const names = (data && data.pets) || [];
+  petNames = names;
   if (!names.length) return;
   const sel = $('pet');
   for (const [value, text] of [['', 'all pets'], ...names.map((n) => [n, n]), ['unknown', 'unknown']]) {

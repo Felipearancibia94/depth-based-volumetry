@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qs, urlparse
 
+from perception_lab.core.config import UNKNOWN_PET
 from perception_lab.spatial.scene import SceneCalibration
 from perception_lab.store.db import EventStore
 from perception_lab.store.media import resolve_media_path
@@ -143,7 +144,11 @@ def make_handler(state: DashboardState) -> type[BaseHTTPRequestHandler]:
                 label = body.get("label")
                 if label is not None and (not isinstance(label, str) or len(label) > 100):
                     raise ValueError("label must be a short string")
-                event = state.store.set_review(event_id, body.get("status", ""), label)
+                pet = body.get("pet")
+                allowed = (*state.pet_names, UNKNOWN_PET)
+                if pet is not None and pet not in allowed:
+                    raise ValueError(f"pet must be one of {', '.join(allowed)}")
+                event = state.store.set_review(event_id, body.get("status", ""), label, pet)
             except KeyError:
                 return self._error(HTTPStatus.NOT_FOUND, "no such event")
             except (ValueError, AttributeError) as exc:

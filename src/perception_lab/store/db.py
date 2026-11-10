@@ -65,6 +65,10 @@ class EventStore:
             "UPDATE events SET pet = json_extract(payload, '$.interpretation.pet') "
             "WHERE json_extract(payload, '$.interpretation_status') = 'done'"
         )
+        self._db.execute(
+            "UPDATE events SET pet = json_extract(payload, '$.review_pet') "
+            "WHERE json_extract(payload, '$.review_pet') IS NOT NULL"
+        )
 
     def _init_fts(self) -> bool:
         try:
@@ -123,13 +127,18 @@ class EventStore:
             self._index(event)
             self._db.commit()
 
-    def set_review(self, event_id: str, status: str, label: str | None = None) -> PetEvent:
+    def set_review(
+        self, event_id: str, status: str, label: str | None = None, pet: str | None = None
+    ) -> PetEvent:
+        """Record the owner's review; ``pet`` (when given) corrects the pet name."""
         if status not in REVIEW_STATES:
             raise ValueError(f"review status must be one of {', '.join(REVIEW_STATES)}")
         event = self.get(event_id)
         if event is None:
             raise KeyError(f"unknown event {event_id}")
         event.review_status, event.review_label = status, label
+        if pet is not None:
+            event.review_pet = pet
         self.update(event)
         return event
 

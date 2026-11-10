@@ -112,3 +112,16 @@ def test_pet_filter_and_pet_list(dashboard):
     assert json.loads(_request(port, "GET", "/api/events?pet=Leia")[2]) == []
     status, _, body = _request(port, "GET", "/")
     assert b'id="pet"' in body
+
+
+def test_review_can_correct_the_pet(dashboard):
+    port, _ = dashboard
+    headers = {"Content-Type": "application/json"}
+    body = json.dumps({"status": "confirmed", "pet": "Leia"})
+    status, _, data = _request(port, "POST", "/api/events/e2/review", body, headers)
+    assert status == 200 and json.loads(data)["review_pet"] == "Leia"
+    assert [
+        e["event_id"] for e in json.loads(_request(port, "GET", "/api/events?pet=Leia")[2])
+    ] == ["e2"]
+    bad = json.dumps({"status": "confirmed", "pet": "Rex"})
+    assert _request(port, "POST", "/api/events/e2/review", bad, headers)[0] == 400

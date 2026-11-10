@@ -160,3 +160,14 @@ def test_old_database_gets_the_pet_column_and_backfill(tmp_path):
     finally:
         store.close()
     EventStore(path).close()  # opening again is a no-op
+
+
+def test_owner_correction_overrides_the_vlm_name(store):
+    store.add(_event("e1"))
+    _interpret(store, "e1", "Negrita")
+    event = store.set_review("e1", "confirmed", None, pet="Nube")
+    assert event.pet == "Nube" and event.interpretation["pet"] == "Negrita"
+    assert [e.event_id for e in store.list(pet="Nube")] == ["e1"]
+    assert store.list(pet="Negrita") == []
+    store.set_review("e1", "confirmed")  # a later review without pet keeps the correction
+    assert store.get("e1").pet == "Nube"

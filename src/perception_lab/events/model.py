@@ -81,6 +81,7 @@ class PetEvent:
     evidence: list[dict[str, Any]] = field(default_factory=list)
     review_status: str = "unreviewed"
     review_label: str | None = None
+    review_pet: str | None = None  # the owner's correction of the pet name, if any
     confidence: float | None = None
     event_type: str = "pet_activity"
     schema_version: int = SCHEMA_VERSION
@@ -94,7 +95,9 @@ class PetEvent:
 
     @property
     def pet(self) -> str | None:
-        """The VLM's pet name (or ``"unknown"``) when interpreted and asked, otherwise ``None``."""
+        """The owner's correction if any, else the VLM's pet name (or ``"unknown"``)."""
+        if self.review_pet is not None:
+            return self.review_pet
         if self.interpretation_status == "done" and self.interpretation:
             return self.interpretation.get("pet")
         return None
