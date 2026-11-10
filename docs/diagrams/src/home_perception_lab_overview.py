@@ -1,110 +1,106 @@
-"""Overview: pipeline, hardware, models and ToDo. Status comes from ROADMAP.md."""
+"""Level 1 overview: hardware and weights, the two packages, local services and data.
 
-from excalidraw_lib import BLUE, GREEN, GREY, MUTED, ORANGE, PURPLE
+Structure comes from ARCHITECTURE.md; status and measurements from ROADMAP.md. Detail per
+level is in docs/architecture/ and docs/diagrams/mermaid/.
+"""
+
+from excalidraw_lib import BLUE, GREEN, GREY, MUTED, ORANGE
 
 OUTPUT = "docs/diagrams/home-perception-lab-overview"
 SEED = 2000
 
+COL1_X, COL1_W = 0, 470
+COL2_X, COL2_W = 560, 520
+COL3_X, COL3_W = 1170, 560
+TOP = 135
+
 
 def build(d, repo):
     d.header(
-        "Home AI Perception Lab: architecture, hardware, models and ToDo",
-        "Green = implemented, tested on synthetic data only.  Orange = needs real hardware or "
-        "a real model to validate.  Grey = later.",
+        "Home AI Perception Lab: system overview (level 1)",
+        "Blue = measured on the development PC (2026-11-09).  Green = implemented, synthetic "
+        "tests only.  Orange = not validated on real hardware or a real model.  Grey = later.",
     )
 
-    # Pipeline
-    d.zone("z_frame", 0, 85, 1840, 150, ("#dbe4ff", "#4a9eed"))
-    d.label("z_frame_l", 12, 92, "Per frame (synchronous)", 18, BLUE[1])
-    frame = [
-        ("src", "FrameSource\nRealSense, .bag,\nvideo, synthetic", ORANGE),
-        ("det", "Detector\nYOLOv8-layout ONNX\ncat / dog", ORANGE),
-        ("trk", "Tracker\nByteTrack style", GREEN),
-        ("spa", "SpatialEstimator\nfloor plane, zones,\nrobust depth", ORANGE),
-        ("his", "TrackHistory\nper track", GREEN),
-        ("rul", "EventEngine\n7 deterministic\nrules", GREEN),
-    ]
-    for i, (eid, text, colors) in enumerate(frame):
-        d.box(eid, 20 + 300 * i, 130, 245, 90, text, colors, 17)
-    for (a, _, _), (b, _, _) in zip(frame, frame[1:], strict=False):
-        d.arrow(f"a_{a}_{b}", a, b)
+    d.zone("z1", COL1_X - 15, 85, COL1_W + 30, 640, ("#ffe8cc", "#e8590c"))
+    d.label("z1l", COL1_X, 92, "Hardware and weights (this PC)", 18, ORANGE[1])
+    d.zone("z2", COL2_X - 15, 85, COL2_W + 30, 640, ("#dbe4ff", "#4a9eed"))
+    d.label("z2l", COL2_X, 92, "This repository: two packages", 18, BLUE[1])
+    d.zone("z3", COL3_X - 15, 85, COL3_W + 30, 640, ("#e5dbff", "#9775fa"))
+    d.label("z3l", COL3_X, 92, "Local services and data (loopback only)", 18, "#6741d9")
 
-    d.zone("z_event", 0, 255, 1840, 150, ("#e5dbff", "#9775fa"))
-    d.label("z_event_l", 170, 262, "Per event (alerts never wait for the VLM)", 18, PURPLE[1])
-    event = [
-        ("pip", "PetPipeline\nfacts + evidence", GREEN),
-        ("sto", "EventStore\nSQLite + images", GREEN),
-        ("not", "Notifier\nnotify-send / webhook", GREEN),
-        ("vlm", "VLMWorker\nasync, local, optional", ORANGE),
-        ("das", "Dashboard\n127.0.0.1", GREEN),
-        ("eva", "Eval + bench\nlab eval / lab bench", ORANGE),
-    ]
-    for i, (eid, text, colors) in enumerate(event):
-        d.box(eid, 20 + 317 * i, 300, 215, 90, text, colors, 17)
-    d.arrow("a_pip_sto", "pip", "sto")
-    d.arrow("a_sto_not", "sto", "not")
-    d.arrow("a_vlm_das", "vlm", "das", dashed=True)
-    d.arrow("a_das_eva", "das", "eva", dashed=True)
-    d.arrow("a_rul_pip", "rul", "pip", elbow_y=245)
+    # Column 1: hardware and weights
+    d.box("cam", COL1_X, TOP, COL1_W, 100,
+          "Intel RealSense D435 (fw 5.13.0.50)\nlive at 640x480, 15 fps\n"
+          "USB 2.1 today: a USB 3 port is to confirm", BLUE, 16)  # fmt: skip
+    d.box("gpu", COL1_X, 260, COL1_W, 100,
+          "NVIDIA GTX 1660 SUPER, 6 GB\nno tensor cores; detector and VLM share it\n"
+          "CUDA path failed here, DirectML works", BLUE, 16)  # fmt: skip
+    d.box("onnx", COL1_X, 385, COL1_W, 125,
+          "Detector weights (not in git)\nmulti-class YOLO-layout ONNX, cat = 55, dog = 86\n"
+          "l: 281 ms CPU, 32 ms GPU (DirectML)\nlicence of the weights to confirm",
+          BLUE, 16)  # fmt: skip
 
-    # Hardware
-    d.label("h_t", 0, 440, "Hardware needed", 24, ORANGE[1])
-    hardware = [
-        ("Intel RealSense D435 (fw 5.13.0.50)\nworks live at 640x480, 15 fps\n"
-         "enumerates as USB 2.1: needs USB 3", ORANGE),
-        ("NVIDIA GTX 1660 SUPER\n6 GB, no tensor cores\n(detector + VLM must share it)", GREEN),
-        ("Ubuntu + NVIDIA driver / CUDA\nversions to check:\nnvidia-smi", ORANGE),
-        ("CPU and RAM\nnot yet recorded", GREY),
-        ("Tape measure\nfloor and zone calibration", ORANGE),
-    ]  # fmt: skip
-    for i, (text, colors) in enumerate(hardware):
-        d.box(f"hw{i + 1}", 0, 485 + 105 * i, 540, 90, text, colors, 17)
+    # Column 2: repository
+    d.box("pipe", COL2_X, TOP, COL2_W, 100,
+          "perception_lab: pet monitoring\nframe loop: detect, track, spatial facts, 7 rules\n"
+          "alerts never wait for the VLM", GREEN, 16)  # fmt: skip
+    d.box("vol", COL2_X, 260, COL2_W, 100,
+          "depth_volumetry: box length, width, height\nmeasure and capture CLI\n"
+          "not run with a real model or capture yet", ORANGE, 16)  # fmt: skip
+    d.box("vlmbox", COL2_X, 385, COL2_W, 100,
+          "VLM interpretation + pet-name gate\ndescribes the event after the alert\n"
+          "name kept only if detector score >= 0.4", ORANGE, 16)  # fmt: skip
+    d.box("dash", COL2_X, 510, COL2_W, 90,
+          "Dashboard on 127.0.0.1\nevents, pet filter, owner correction, daily summary",
+          GREEN, 16)  # fmt: skip
+    d.box("evalb", COL2_X, 625, COL2_W, 80,
+          "Evaluation and benchmarks\nlab eval, lab bench (no real labelled data yet)",
+          ORANGE, 16)  # fmt: skip
 
-    # Models
-    d.label("m_t", 600, 440, "Models and runtimes", 24, PURPLE[1])
-    models = [
-        ("Detector: multi-class YOLO-layout ONNX (cat = 55, dog = 86)\n"
-         "l: 281 ms CPU, 32 ms GPU (DirectML); CUDA untested\nlicence of the weights to confirm",
-         ORANGE),
-        ("Tracker: ByteTrack style, in-repo\nno weights", GREEN),
-        ("VLM: qwen3-vl:2b-instruct through Ollama (num_ctx 8192)\n"
-         "names the pet; gated on detector score; 4B untested", ORANGE),
-        ("Text LLM for daily summaries\nlater, never next to the VLM on 6 GB", GREY),
-        ("Runtime: Ollama or llama.cpp llama-server\nloopback only", ORANGE),
-    ]  # fmt: skip
-    for i, (text, colors) in enumerate(models):
-        d.box(f"md{i + 1}", 600, 485 + 105 * i, 640, 90, text, colors, 16)
-
-    # ToDo
-    d.label("t_t", 1280, 440, "ToDo", 24, GREEN[1])
-    todo2 = (
-        "Phase 2: hardware validation\n"
-        "- done: lab discover and live capture (D435)\n"
-        "- record/replay with pyrealsense2 2.55 (pinned)\n"
-        "- connect on USB 3, run lab discover again\n"
-        "- check the VLM licence on the model card\n"
-        "- live run with light: pet names + summary\n"
-        "- lab calibrate: floor plane + zones"
+    # Column 3: services and data
+    d.box(
+        "notif",
+        COL3_X,
+        TOP,
+        COL3_W,
+        80,
+        "Notifications\nnotify-send or loopback webhook",
+        GREEN,
+        16,
     )
-    todo3 = (
-        "Phase 3: dataset and evaluation\n"
-        "- record 15-25 sessions, label them\n"
-        "- split by session, freeze the test split\n"
-        "- false events per day, VLM accuracy,\n"
-        "  unknown rate, id switches\n"
-        "- decide which activities ship enabled"
+    d.box(
+        "db",
+        COL3_X,
+        240,
+        COL3_W,
+        90,
+        "SQLite events + evidence JPEGs\ndata/lab.db, data/media (git-ignored)",
+        GREEN,
+        16,
     )
-    later = (
-        "Later\n"
-        "- per-animal baselines, pet identity\n"
-        "- multi-camera, daily summaries\n"
-        "- HTTP API / Docker for depth_volumetry"
-    )
-    d.box("td2", 1280, 485, 560, 215, todo2, ORANGE, 15)
-    d.box("td3", 1280, 715, 560, 150, todo3, ORANGE, 15)
-    d.box("td4", 1280, 880, 560, 100, later, GREY, 15, dashed=True)
+    d.box("ollama", COL3_X, 385, COL3_W, 100,
+          "Ollama (loopback only)\nqwen3-vl:2b-instruct, num_ctx 8192\n"
+          "first request 16 s (1 image) to 42 s (4 images)", BLUE, 16)  # fmt: skip
+    d.box("rec", COL3_X, 510, COL3_W, 90,
+          "Recordings (.bag + JSON sidecar)\nrecord / replay with the pinned SDK: to verify",
+          ORANGE, 16)  # fmt: skip
+    d.box("later", COL3_X, 625, COL3_W, 80,
+          "Not scheduled: night / infrared path, per-animal\n"
+          "identity, multi-camera, text-LLM summaries",
+          GREY, 16, dashed=True)  # fmt: skip
 
-    d.label("foot", 0, 1030,
-            "Source of truth for status: ROADMAP.md.  Design: docs/pet-monitoring.md.  "
-            "Measured so far: live D435 capture, detector latency (CPU, DirectML) and VLM "
-            "latency. Not measured: CUDA, accuracy.", 15, MUTED)  # fmt: skip
+    # Data flow (solid = synchronous or direct, dashed = asynchronous or optional)
+    d.arrow("a_cam_pipe", "cam", "pipe")
+    d.arrow("a_cam_vol", "cam", "vol")
+    d.arrow("a_onnx_pipe", "onnx", "pipe")
+    d.arrow("a_pipe_vol", "pipe", "vol")
+    d.arrow("a_pipe_notif", "pipe", "notif")
+    d.arrow("a_pipe_db", "pipe", "db")
+    d.arrow("a_vlm_ollama", "vlmbox", "ollama", dashed=True)
+    d.arrow("a_dash_db", "dash", "db", dashed=True)
+
+    d.label("foot", 0, 745,
+            "Arrows: solid = direct, dashed = asynchronous or reading.  pipe -> vol: the lab "
+            "reuses decode, io and the lazy SDK import.  Detail: ARCHITECTURE.md (levels 1-4).  "
+            "Status: ROADMAP.md.  Not measured: CUDA, accuracy.", 15, MUTED)  # fmt: skip

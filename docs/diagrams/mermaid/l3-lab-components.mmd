@@ -1,0 +1,83 @@
+classDiagram
+    class PetApp {
+        +frames()
+        +close()
+    }
+    class PetPipeline {
+        +process(bundle)
+        +run(frames, stop)
+        +finish()
+    }
+    class Detector {
+        <<interface>>
+        +detect(bundle)
+    }
+    class YoloOnnxDetector
+    class GroundTruthDetector
+    class Tracker {
+        +update(detections, ts)
+    }
+    class SpatialEstimator {
+        +measure(bundle, box, mask)
+    }
+    class EventEngine {
+        +update(now_s, observations, histories)
+        +flush()
+    }
+    class Rule {
+        <<interface>>
+        +evaluate(now_s, observations, histories)
+    }
+    class PetEvent {
+        +str rule
+        +str hypothesis
+        +dict observed_facts
+        +dict interpretation
+        +str interpretation_status
+        +str review_pet
+    }
+    class EventStore {
+        +add(event)
+        +update(event)
+        +get(event_id)
+        +list(pet, rule)
+        +search(query)
+        +set_review(event_id, status)
+    }
+    class Notifier {
+        <<interface>>
+        +notify(event)
+    }
+    class VLMWorker {
+        +submit(event, images, times)
+        +wait_idle()
+        +stop()
+    }
+    class Interpreter {
+        +interpret(event, images, times)
+    }
+    class VLMProvider {
+        <<interface>>
+        +complete(prompt, jpegs, schema)
+    }
+
+    PetApp --> PetPipeline : builds
+    PetPipeline o-- Detector
+    PetPipeline o-- Tracker
+    PetPipeline o-- SpatialEstimator
+    PetPipeline o-- EventEngine
+    PetPipeline o-- EventStore
+    PetPipeline o-- Notifier
+    PetPipeline o-- VLMWorker
+    PetPipeline ..> PetEvent : creates
+    Detector <|.. YoloOnnxDetector
+    Detector <|.. GroundTruthDetector
+    EventEngine o-- Rule : 7 instances of 5 classes
+    EventStore --> PetEvent : stores
+    VLMWorker --> Interpreter
+    Interpreter --> VLMProvider
+    VLMProvider <|.. OllamaProvider
+    VLMProvider <|.. OpenAICompatProvider
+    Notifier <|.. DesktopNotifier
+    Notifier <|.. WebhookNotifier
+    Notifier <|.. LogNotifier

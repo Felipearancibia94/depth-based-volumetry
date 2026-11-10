@@ -1,0 +1,9 @@
+stateDiagram-v2
+    [*] --> not_requested
+    not_requested --> pending : interpreter configured and evidence images exist
+    pending --> done : reply matches the JSON schema
+    pending --> failed : provider error, schema invalid twice, or worker exception
+    pending --> skipped : queue full, oldest job dropped
+    done --> [*]
+    failed --> [*]
+    skipped --> [*]

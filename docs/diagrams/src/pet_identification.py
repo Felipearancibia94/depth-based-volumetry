@@ -18,13 +18,16 @@ def build(d, repo):
 
     d.zone("z1", 0, 85, 1900, 175, ("#dbe4ff", "#4a9eed"))
     d.label("z1l", 12, 91, "From a camera frame to a named pet", 17, "#1971c2")
-    d.row("b", 20, 125, 275, 110, 310, [
+    d.row("b", 20, 125, 240, 110, 265, [
         ("Camera frame\n640x480, 15 fps\nneeds light", ORANGE),
         ("Detector\ncat or dog + box + score\nsensitive to orientation", ORANGE),
         ("Evidence\n4 crops + 1 full frame\n448 px each", GREEN),
         ("VLM prompt\nfacts + list of pets +\n'unknown' allowed", GREEN),
         ("Answer as JSON\npet, activity, description\nuncertainty, certainty", GREEN),
-        ("Stored event + dashboard\n'Nube - resting - text'\nname is a hint", ORANGE),
+        ("Name gate\nkept if detector score\n>= 0.4 and certainty\nnot low, else 'unknown'",
+         ORANGE),
+        ("Stored event + dashboard\n'Nube - resting - text'\nhint; owner can correct",
+         ORANGE),
     ], fs=15)  # fmt: skip
 
     d.zone("z2", 0, 280, 1900, 110, ("#e5dbff", "#9775fa"))
@@ -55,10 +58,17 @@ def build(d, repo):
     d.box("leia_note", 1295, 725, 300, 55, "no photo yet", GREY, 15, dashed=True)
 
     d.zone("z3", 0, 825, 1900, 160, RED, opacity=30)
-    d.label("z3l", 12, 831, "Known limits (measured here, none fixed yet)", 20, RED[1])
+    d.label(
+        "z3l",
+        12,
+        831,
+        "Known limits (measured here; the name gate is not re-tested live)",
+        20,
+        RED[1],
+    )
     d.label("lims", 12, 868,
             "- A room with a person and no animal was named \"Negrita\" with certainty high "
-            "(1 case): treat the name as a hint, not a fact.\n"
+            "(1 case, before the name gate existed): treat the name as a hint, not a fact.\n"
             "- In a dark room the colour camera is almost black (brightness 5.8 of 255) and "
             "the detector finds nothing.\n"
             "- A new event takes about 40-55 s in the VLM; repeating the same request is "

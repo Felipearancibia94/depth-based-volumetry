@@ -1,0 +1,22 @@
+erDiagram
+    EVENTS {
+        text event_id PK
+        text camera_id
+        text rule
+        text hypothesis
+        text activity "VLM activity when done"
+        text interpretation_status
+        text review_status
+        text zone
+        real timestamp_start_s
+        real timestamp_end_s
+        text detected_at
+        real created_unix
+        text payload "full PetEvent as JSON"
+        text pet "owner correction or VLM name"
+    }
+    EVENTS_FTS {
+        text event_id "UNINDEXED"
+        text body "summary, rule, pet, VLM text, review label"
+    }
+    EVENTS ||--o| EVENTS_FTS : "indexed when FTS5 is available"

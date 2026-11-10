@@ -128,16 +128,13 @@ Ollama or llama.cpp, desktop notifications and a dashboard on 127.0.0.1. Design,
 calibration, the evaluation protocol and limitations are in
 [`docs/pet-monitoring.md`](docs/pet-monitoring.md).
 
-![Pet monitoring data flow](docs/diagrams/pet-monitoring-architecture.svg)
+The system view, with the hardware, weights and local services, is below. Green boxes are
+implemented and tested on synthetic data; blue ones were measured on the development PC; orange
+ones still need a real camera, detector or VLM to validate
+([editable source](docs/diagrams/home-perception-lab-overview.excalidraw)). The levels from
+system down to execution, with Mermaid diagrams, start at [`ARCHITECTURE.md`](ARCHITECTURE.md).
 
-The diagram is also available as an editable
-[Excalidraw file](docs/diagrams/pet-monitoring-architecture.excalidraw).
-
-The overview below adds the hardware, models and ToDo list. Green boxes are implemented and
-tested on synthetic data only; orange ones need a real camera, detector or VLM to validate
-([editable source](docs/diagrams/home-perception-lab-overview.excalidraw)).
-
-![Home perception lab overview: architecture, hardware, models and ToDo](docs/diagrams/home-perception-lab-overview.png)
+![Home perception lab overview: hardware, weights, packages and local services](docs/diagrams/home-perception-lab-overview.png)
 
 Try it without any hardware on the built-in synthetic scene:
 
@@ -163,9 +160,10 @@ uv run lab eval
 Most commands take `--config`, `--source`, `--path` and `--frames`. Exit codes: `0`
 success, `1` nothing to do (no device, no frames), `2` usage, input or configuration error.
 
-The lab has been tested only with synthetic data, a fake RealSense SDK and a fake VLM
-runtime; real-hardware and real-model results must come from your own `lab eval` and
-`lab bench` runs.
+The lab is covered by synthetic tests (a synthetic scene, a fake RealSense SDK and a fake VLM
+runtime). Live capture, detector and VLM latency and a live cat were also run once on a
+development PC (see [`ROADMAP.md`](ROADMAP.md)); accuracy figures must come from your own
+`lab eval` and `lab bench` runs.
 
 ## Configuration
 

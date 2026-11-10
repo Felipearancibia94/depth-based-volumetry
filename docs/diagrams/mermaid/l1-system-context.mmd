@@ -1,0 +1,43 @@
+flowchart LR
+    owner(["Owner"])
+    browser["Browser"]
+    subgraph repo["depth-based-volumetry (one distribution, two packages)"]
+        direction TB
+        subgraph vol["depth_volumetry"]
+            VCLI["depth-volumetry CLI<br/>measure, capture"]
+            VLIB["measurement, segmentation,<br/>calibration, io, realsense"]
+        end
+        subgraph lab["perception_lab"]
+            LCLI["lab CLI<br/>run, record, replay, eval, ..."]
+            APP["Pet monitoring<br/>pipeline, rules, events"]
+            DASH["Dashboard<br/>127.0.0.1"]
+        end
+    end
+    CAM["RealSense D435<br/>pyrealsense2 (optional extra)"]
+    ONNX["ONNX Runtime<br/>detector or box-model weights"]
+    VLMSRV["VLM server<br/>Ollama or OpenAI-compatible, loopback"]
+    DB[("SQLite events<br/>+ evidence JPEGs")]
+    NOTIF["notify-send<br/>or loopback webhook"]
+
+    owner --> VCLI
+    owner --> LCLI
+    owner --> browser
+    VCLI --> VLIB
+    LCLI --> APP
+    APP -- "reuses decode, io,<br/>lazy SDK import" --> VLIB
+    VLIB --> CAM
+    VLIB --> ONNX
+    APP --> CAM
+    APP --> ONNX
+    APP -. "async, optional" .-> VLMSRV
+    APP --> DB
+    APP --> NOTIF
+    DASH --> DB
+    browser -- "HTTP" --> DASH
+
+    classDef impl fill:#b2f2bb,stroke:#2f9e44,color:#1e1e1e
+    classDef measured fill:#a5d8ff,stroke:#1971c2,color:#1e1e1e
+    classDef external fill:#e9ecef,stroke:#868e96,color:#1e1e1e
+    class VCLI,VLIB,LCLI,APP,DASH,DB,NOTIF impl
+    class CAM,ONNX,VLMSRV measured
+    class owner,browser external

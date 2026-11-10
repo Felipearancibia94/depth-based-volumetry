@@ -1,0 +1,34 @@
+flowchart LR
+    subgraph frame["Per frame (synchronous, main thread)"]
+        SRC["FrameSource<br/>RealSense, .bag,<br/>video, synthetic"] --> DET["Detector<br/>YOLO-layout ONNX<br/>or ground truth"]
+        DET --> TRK["Tracker<br/>ByteTrack style"]
+        TRK --> SPA["SpatialEstimator<br/>depth, floor, zones"]
+        SPA --> HIS["TrackHistory<br/>per track"]
+        HIS --> RUL["EventEngine<br/>7 deterministic rules"]
+        SPA --> RING["FrameRingBuffer<br/>recent evidence frames"]
+    end
+    subgraph event["Per event"]
+        PIPE["PetPipeline<br/>facts + evidence"]
+        MEDIA["Evidence JPEGs<br/>store/media"]
+        STORE[("EventStore<br/>SQLite")]
+        NOT["Notifier<br/>notify-send / webhook"]
+        VLM["VLMWorker<br/>background thread"]
+        INT["Interpreter + provider<br/>Ollama / OpenAI-compatible"]
+        GATE["gate_pet<br/>pet-name gate"]
+    end
+    subgraph serve["Serving"]
+        DASH["Dashboard<br/>127.0.0.1"]
+    end
+
+    RUL -- "event starts / ends" --> PIPE
+    RING -. "crops" .-> PIPE
+    PIPE --> MEDIA
+    PIPE --> STORE
+    PIPE --> NOT
+    PIPE -. "evidence, queued" .-> VLM
+    VLM --> INT
+    INT -. "interpretation" .-> GATE
+    GATE -. "update" .-> STORE
+    STORE --> DASH
+    PIPE -. "status, live frame" .-> DASH
+    DASH -. "owner review" .-> STORE

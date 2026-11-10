@@ -5,51 +5,17 @@ depth-based spatial facts, deterministic event rules, optional descriptions from
 local vision-language model (VLM), local notifications and a local dashboard. Everything
 runs on one machine; nothing is sent to a cloud service.
 
-**Status.** The pipeline is implemented and tested against a synthetic scene, a fake
-RealSense SDK and a fake VLM runtime. It has **not** been run with a real camera, a real
-detection model or a real VLM in this repository. Every accuracy, latency or memory figure
-must come from your own runs (`lab eval`, `lab bench`).
+**Status.** The pipeline is implemented and covered by synthetic tests (a synthetic scene, a
+fake RealSense SDK and a fake VLM runtime). Live capture, detector and VLM latency and a live
+cat were also run on the Windows development PC on 2026-11-09; see [`ROADMAP.md`](../ROADMAP.md)
+for what was measured and what was not. Nothing here is a real-world accuracy measurement:
+every accuracy figure must come from your own runs (`lab eval`, `lab bench`).
 
 ## Architecture
 
-```mermaid
-flowchart LR
-    subgraph frame["Per frame (synchronous)"]
-        SRC["FrameSource<br/>RealSense, .bag,<br/>video, synthetic"] --> DET["Detector<br/>YOLOv8 ONNX"]
-        DET --> TRK["Tracker<br/>ByteTrack style"]
-        TRK --> SPA["SpatialEstimator<br/>depth, floor, zones"]
-        SPA --> HIS["TrackHistory<br/>per track"]
-        HIS --> RUL["EventEngine<br/>deterministic rules"]
-    end
-    subgraph event["Per event"]
-        RUL -- "event starts" --> PIPE["PetPipeline<br/>facts + evidence"]
-        PIPE --> STORE[("EventStore<br/>SQLite + images")]
-        PIPE --> NOT["Notifier<br/>notify-send / webhook"]
-        PIPE -. "evidence" .-> VLM["VLMWorker<br/>async, local"]
-        VLM -. "description" .-> STORE
-        STORE --> DASH["Dashboard<br/>127.0.0.1"]
-    end
-```
-
-Alerts and notifications come from the rules and never wait for the VLM; its answer is
-merged into the stored event afterwards.
-
-The same flow as an image (`docs/diagrams/pet-monitoring-architecture.svg`, editable source
-in `docs/diagrams/pet-monitoring-architecture.excalidraw`):
-
-![Pet monitoring data flow](diagrams/pet-monitoring-architecture.svg)
-
-| Module | Responsibility |
-|---|---|
-| `sources/` | `FrameBundle` (colour, aligned depth, intrinsics, timestamp) from RealSense live, `.bag` replay, video or the synthetic scene; `throttle` drops frames instead of queuing |
-| `vision/` | YOLOv8-layout ONNX detector reusing `depth_volumetry.segmentation`; ByteTrack-style tracker; live-view drawing |
-| `spatial/` | floor plane (RANSAC), zones (image polygons, optional elevation range), robust depth per track |
-| `events/` | track histories, temporal features, rules, start/end hysteresis and cooldowns, evidence ring buffer, event model |
-| `vlm/` | strict JSON schema, versioned prompt, Ollama / OpenAI-compatible providers, background worker |
-| `store/` | SQLite event history with full-text search, evidence JPEGs, retention |
-| `notify/`, `web/` | `notify-send`, loopback webhook, log lines; standard-library dashboard |
-| `eval/` | labels, metrics, repeatable evaluation runs, on-machine benchmarks |
-| `apps/pets/` | wiring of the above into `PetPipeline` |
+The structure is documented in [`ARCHITECTURE.md`](../ARCHITECTURE.md) (system view and the
+package table) and [`architecture/lab.md`](architecture/lab.md) (data flow, components and
+execution, with diagrams). The rules below are the design principles behind it.
 
 Design rules:
 
@@ -96,8 +62,9 @@ Depth is never used as evidence of identity or behaviour on its own.
 
 ## First steps on the target machine
 
-Run these on the Ubuntu machine with the camera and GPU, and keep the outputs; they replace
-every assumption in this document.
+Run these on the machine with the camera and GPU (the first runs were on a Windows PC, see
+[`ROADMAP.md`](../ROADMAP.md); the Ubuntu and CUDA path is untested) and keep the outputs;
+they replace every assumption in this document.
 
 ```bash
 nvidia-smi
@@ -317,7 +284,9 @@ as missed; set `stationary_s = 30` to exercise the rule.
 
 ## Known limitations
 
-- Not validated with real hardware, a real detector or a real VLM.
+- Only partly validated on real hardware: a live capture, detector and VLM latency and one
+  live cat were run on 2026-11-09 (see [`ROADMAP.md`](../ROADMAP.md)); there is no labelled
+  real data, so no accuracy figure exists.
 - One camera; multi-camera fusion is not implemented.
 - Track ids are not animal identities; identity can switch when animals overlap.
 - Under heavy detector noise (synthetic: 40 % missed detections, 8 px jitter) the

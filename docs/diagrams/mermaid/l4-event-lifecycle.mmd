@@ -1,0 +1,28 @@
+sequenceDiagram
+    participant E as EventEngine
+    participant P as PetPipeline
+    participant S as EventStore
+    participant N as Notifier
+    participant W as VLMWorker
+    participant I as Interpreter
+    participant V as VLM server
+
+    E->>P: RuleHit (event starts)
+    P->>P: build facts, pick evidence frames, save JPEGs
+    P->>S: add(event), status pending when images exist
+    P->>N: notify(event), synchronous
+    P-)W: submit(event, images, times)
+    Note over P,W: the frame loop continues, alerts never wait for the VLM
+    W->>I: interpret(event, images, times)
+    loop up to 2 attempts
+        I->>V: complete(prompt, JPEGs, JSON schema)
+        V-->>I: reply text
+        I->>I: parse_interpretation, retry with the error if invalid
+    end
+    I-->>W: InterpretationResult (done, failed)
+    W-)P: _on_interpretation(result)
+    P->>P: gate_pet, uncertainty notes
+    P->>S: update(event), under the pipeline lock
+    E->>P: event ends (key, last time seen)
+    P->>S: update(event), duration_s
+    Note over S: dashboard review calls set_review without the pipeline lock

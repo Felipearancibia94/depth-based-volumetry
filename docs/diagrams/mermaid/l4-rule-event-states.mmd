@@ -1,0 +1,11 @@
+stateDiagram-v2
+    state "Active, event open" as Open
+    state "Active, suppressed by cooldown" as Suppressed
+    [*] --> Idle
+    Idle --> Open : condition appears and cooldown_s elapsed since the last start
+    Idle --> Suppressed : condition appears within cooldown_s of the last start
+    Open --> Open : condition still holds
+    Suppressed --> Suppressed : condition still holds
+    Open --> Idle : not seen for release_s, event ends at the last time seen
+    Open --> Idle : flush when the source stops
+    Suppressed --> Idle : not seen for release_s, no event

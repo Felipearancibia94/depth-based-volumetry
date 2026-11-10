@@ -1,0 +1,34 @@
+flowchart LR
+    COLOR["color image"]
+    DEPTH["depth map<br/>.npy or image"]
+    CAL["calibration.toml<br/>Calibration"]
+    subgraph maskstep["Mask (exactly one source)"]
+        MFILE["--mask<br/>read_mask"]
+        MMODEL["--model<br/>SegmentationModel<br/>preprocess, decode, select_target"]
+    end
+    subgraph measure["measurement.measure_box"]
+        FOOT["footprint_px<br/>minAreaRect"]
+        DIST["surface_distance_cm<br/>percentile band"]
+        DIM["scale, length, width, height"]
+    end
+    OUT["BoxMeasurement<br/>JSON or text, optional overlay"]
+    ERR["exit 1: MeasurementError<br/>exit 2: CalibrationError or bad input"]
+
+    COLOR --> MMODEL
+    MFILE --> FOOT
+    MMODEL --> FOOT
+    MFILE --> DIST
+    MMODEL --> DIST
+    DEPTH --> DIST
+    CAL --> DIST
+    CAL --> DIM
+    FOOT --> DIM
+    DIST --> DIM
+    DIM --> OUT
+    DIM -. "invalid" .-> ERR
+
+    subgraph capture["capture command"]
+        CAM["RealSense D435"] --> CAP["capture_frames<br/>640x480, depth aligned to colour"]
+        CAP --> FILES["color.png, depth.npy, device.toml"]
+    end
+    FILES -. "inputs for measure" .-> COLOR

@@ -1,0 +1,34 @@
+flowchart LR
+    subgraph main["Main thread: frame loop"]
+        FRAME["process(bundle)<br/>detect, track, spatial, rules"]
+        START["_start_event<br/>JPEG writes, store.add,<br/>notify (up to 5 s)"]
+        FINISH["_end_event, finish"]
+    end
+    subgraph worker["Thread vlm-worker"]
+        QUEUE["queue (queue_size 8)<br/>oldest dropped when full"]
+        RATE["rate limit<br/>max_requests_per_minute 4"]
+        INTERP["Interpreter + provider<br/>HTTP, timeout_s 120"]
+        CALLBACK["_on_interpretation<br/>gate_pet"]
+    end
+    subgraph dash["Dashboard threads (one per request)"]
+        GET["GET: events, summary,<br/>status, live frame"]
+        REVIEW["POST review<br/>set_review"]
+    end
+    LOCK{{"PetPipeline._event_lock"}}
+    STORE[("EventStore<br/>one lock per SQL call, WAL")]
+
+    FRAME --> START
+    FRAME --> FINISH
+    START -. "submit" .-> QUEUE
+    QUEUE --> RATE
+    RATE --> INTERP
+    INTERP --> CALLBACK
+    START --> LOCK
+    FINISH --> LOCK
+    CALLBACK --> LOCK
+    LOCK --> STORE
+    GET --> STORE
+    REVIEW -. "no pipeline lock" .-> STORE
+
+    classDef warn fill:#ffd8a8,stroke:#e8590c,color:#1e1e1e
+    class REVIEW,START warn

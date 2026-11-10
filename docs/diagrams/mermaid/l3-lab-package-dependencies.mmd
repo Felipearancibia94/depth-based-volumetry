@@ -1,0 +1,42 @@
+flowchart TB
+    CLI["cli"]
+    subgraph lab["perception_lab"]
+        APP["apps.pets<br/>PetApp, PetPipeline"]
+        EVAL["eval"]
+        WEB["web"]
+        subgraph chain["frame to event"]
+            SRC["sources"]
+            VIS["vision"]
+            SPA["spatial"]
+            EVT["events"]
+        end
+        VLM["vlm"]
+        NOT["notify"]
+        STO["store"]
+    end
+    subgraph dv["depth_volumetry (reused modules only)"]
+        DSEG["segmentation"]
+        DRS["realsense"]
+        DIO["io"]
+    end
+
+    CLI --> APP
+    CLI --> WEB
+    CLI --> EVAL
+    EVAL --> APP
+    APP --> SRC
+    APP --> VIS
+    APP --> EVT
+    APP --> VLM
+    APP --> NOT
+    APP --> STO
+    WEB --> STO
+    SRC --> SPA
+    VIS --> SPA
+    EVT --> SPA
+    VLM --> EVT
+    NOT --> VLM
+    STO --> EVT
+    SRC -.-> DRS
+    VIS -.-> DSEG
+    STO -.-> DIO

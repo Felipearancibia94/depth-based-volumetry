@@ -5,7 +5,8 @@ Python project with two packages built on aligned colour + depth images (pinhole
 - `depth_volumetry`: library and CLI that estimate a box's length, width and height.
 - `perception_lab`: local home perception lab (`lab` CLI); first app is pet monitoring.
 
-Map and dependency rules: `ARCHITECTURE.md`. Current status and next steps: `ROADMAP.md`.
+Map and dependency rules: `ARCHITECTURE.md` (entry point; levels 2-4 and diagrams in
+`docs/architecture/`). Current status and next steps: `ROADMAP.md`.
 Decisions: `docs/adr/`. Geometry and model contract: `docs/method.md`. Lab design and
 evaluation: `docs/pet-monitoring.md`. `docs/plans/` and `docs/reports/` are dated history,
 not the current state. Package-specific rules load from `.claude/rules/` when you touch
@@ -44,7 +45,8 @@ Add dependencies with `uv add` / `uv add --dev` so `uv.lock` stays in sync. Neve
    and report the actual results, including failures.
 5. When behaviour, a CLI flag or status changes, update README, the relevant doc and
    `ROADMAP.md` in the same change (`/cli-change` for flags, `/excalidraw` to rebuild the
-   generated diagrams in `docs/diagrams/`).
+   generated diagrams in `docs/diagrams/`, `/mermaid` for flow, sequence, state and schema
+   diagrams inside Markdown).
 
 ## Hard constraints
 
