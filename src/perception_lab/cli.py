@@ -107,6 +107,13 @@ def build_parser() -> argparse.ArgumentParser:
     b.add_argument("--out", type=Path, help="also write the JSON result here")
     b.set_defaults(handler=_run_bench_vlm)
 
+    p = with_config(
+        sub.add_parser("summary", help="events and time per pet and activity for one day"),
+        source=False,
+    )
+    p.add_argument("--date", help="day as YYYY-MM-DD in local time (default: today)")
+    p.set_defaults(handler=_run_summary)
+
     p = with_config(sub.add_parser("purge", help="apply media and event retention"), source=False)
     p.add_argument("--dry-run", action="store_true")
     p.set_defaults(handler=_run_purge)
@@ -364,6 +371,22 @@ def _run_bench_vlm(args: argparse.Namespace) -> int:
     result = bench_vlm(config, image_counts=counts, repeats=args.repeats, image_path=args.image)
     result["run_record"] = build_run_record(config)
     _emit(result, args.out)
+    return EXIT_OK
+
+
+def _run_summary(args: argparse.Namespace) -> int:
+    import datetime as dt
+
+    from perception_lab.store.db import EventStore
+    from perception_lab.store.summary import daily_summary
+
+    day = dt.date.fromisoformat(args.date) if args.date else dt.date.today()
+    config = load_with_overrides(args)
+    store = EventStore(config.storage.db_path)
+    try:
+        print(json.dumps(daily_summary(store, day), indent=2))
+    finally:
+        store.close()
     return EXIT_OK
 
 

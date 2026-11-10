@@ -8,6 +8,7 @@ cannot send that without a CORS preflight, which this server never approves).
 
 from __future__ import annotations
 
+import datetime as dt
 import ipaddress
 import json
 import threading
@@ -22,6 +23,7 @@ from perception_lab.core.config import UNKNOWN_PET
 from perception_lab.spatial.scene import SceneCalibration
 from perception_lab.store.db import EventStore
 from perception_lab.store.media import resolve_media_path
+from perception_lab.store.summary import daily_summary
 from perception_lab.web.page import INDEX_HTML
 
 
@@ -99,6 +101,13 @@ def make_handler(state: DashboardState) -> type[BaseHTTPRequestHandler]:
                 pet = query.get("pet", [None])[0]
                 events = state.store.list(limit=limit, offset=offset, rule=rule, pet=pet)
                 return self._json([e.to_dict() for e in events])
+            if path == "/api/summary":
+                day_text = query.get("date", [None])[0]
+                try:
+                    day = dt.date.fromisoformat(day_text) if day_text else dt.date.today()
+                except ValueError:
+                    return self._error(HTTPStatus.BAD_REQUEST, "date must be YYYY-MM-DD")
+                return self._json(daily_summary(state.store, day))
             if path == "/api/pets":
                 return self._json({"pets": list(state.pet_names)})
             if path == "/api/search":

@@ -38,7 +38,18 @@ def test_help_exits_zero(capsys):
 
 @pytest.mark.parametrize(
     "command",
-    ["init-config", "run", "serve", "discover", "record", "replay", "calibrate", "eval", "purge"],
+    [
+        "init-config",
+        "run",
+        "serve",
+        "discover",
+        "record",
+        "replay",
+        "calibrate",
+        "eval",
+        "summary",
+        "purge",
+    ],
 )
 def test_subcommand_help(command, capsys):
     with pytest.raises(SystemExit) as exc:
@@ -121,6 +132,18 @@ def test_calibrate_writes_floor_and_keeps_zones(tmp_path, capsys):
 def test_purge_dry_run(tmp_path, capsys):
     assert main(["purge", "--config", str(_config_file(tmp_path)), "--dry-run"]) == 0
     assert json.loads(capsys.readouterr().out)["dry_run"] is True
+
+
+def test_summary_after_a_run(tmp_path, capsys):
+    config = str(_config_file(tmp_path))
+    assert main(["run", "--config", config, "--quiet"]) == 0
+    capsys.readouterr()
+    assert main(["summary", "--config", config]) == 0
+    report = json.loads(capsys.readouterr().out)
+    assert report["events"] > 0 and "unnamed" in report["pets"]
+    assert main(["summary", "--config", config, "--date", "2001-01-01"]) == 0
+    assert json.loads(capsys.readouterr().out)["events"] == 0
+    assert main(["summary", "--config", config, "--date", "yesterday"]) == 2
 
 
 def test_discover_without_sdk(monkeypatch, capsys):

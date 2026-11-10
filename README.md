@@ -157,6 +157,7 @@ uv run lab eval
 | `lab serve` | dashboard over stored events |
 | `lab eval [--labels L.json]` | score a run against labels ([`examples/labels.example.json`](examples/labels.example.json)) |
 | `lab bench detector` / `lab bench vlm` | latency, schema validity and GPU memory on this machine |
+| `lab summary [--date YYYY-MM-DD]` | events and time per pet and activity for one day (also in the dashboard) |
 | `lab purge [--dry-run]` | apply media and event retention |
 
 Most commands take `--config`, `--source`, `--path` and `--frames`. Exit codes: `0`

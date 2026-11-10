@@ -125,3 +125,11 @@ def test_review_can_correct_the_pet(dashboard):
     ] == ["e2"]
     bad = json.dumps({"status": "confirmed", "pet": "Rex"})
     assert _request(port, "POST", "/api/events/e2/review", bad, headers)[0] == 400
+
+
+def test_summary_endpoint(dashboard):
+    port, _ = dashboard
+    report = json.loads(_request(port, "GET", "/api/summary")[2])
+    assert report["events"] == 2 and report["pets"]["Nube"]["events"] == 1
+    assert _request(port, "GET", "/api/summary?date=nope")[0] == 400
+    assert json.loads(_request(port, "GET", "/api/summary?date=2001-01-01")[2])["events"] == 0

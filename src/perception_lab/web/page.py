@@ -57,6 +57,10 @@ INDEX_HTML = """<!doctype html>
       <pre id="zone"># no points yet</pre>
     </section>
     <section style="margin-top:16px">
+      <h2>Today per pet</h2>
+      <div id="summary" class="muted">–</div>
+    </section>
+    <section style="margin-top:16px">
       <h2>Pipeline</h2>
       <pre id="pipeline">–</pre>
     </section>
@@ -161,6 +165,19 @@ async function loadPets() {
   sel.onchange = () => { $('q').value = ''; loadEvents(); };
 }
 
+async function loadSummary() {
+  const s = await getJSON('/api/summary');
+  const root = $('summary'); root.textContent = '';
+  if (!s || !s.events) { root.className = 'muted'; root.textContent = 'No events today.'; return; }
+  root.className = '';
+  for (const [name, p] of Object.entries(s.pets)) {
+    const acts = Object.entries(p.activities).map(([a, v]) =>
+      `${a.replaceAll('_', ' ')} ${v.events}x ${Math.round(v.seconds / 60)} min`).join(' · ');
+    const row = el('div'); row.append(el('strong', '', name + ': ')); row.append(acts);
+    root.append(row);
+  }
+}
+
 async function loadEvents(q) {
   const pet = $('pet').value;
   const list = await getJSON(q ? '/api/search?q=' + encodeURIComponent(q)
@@ -180,7 +197,8 @@ $('live').addEventListener('click', (ev) => {
 });
 $('clear').onclick = () => { points = []; $('zone').textContent = '# no points yet'; };
 $('search').onsubmit = (ev) => { ev.preventDefault(); loadEvents($('q').value.trim()); };
-refreshStatus(); loadPets(); loadEvents();
+refreshStatus(); loadPets(); loadEvents(); loadSummary();
+setInterval(loadSummary, 30000);
 setInterval(refreshStatus, 1000); setInterval(() => { if (!$('q').value) loadEvents(); }, 5000);
 </script>
 </body>
