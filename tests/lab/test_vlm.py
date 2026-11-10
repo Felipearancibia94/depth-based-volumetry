@@ -8,7 +8,7 @@ import pytest
 from perception_lab.core.config import PetConfig, VLMConfig
 from perception_lab.events.evidence import BufferedFrame
 from perception_lab.events.model import PetEvent
-from perception_lab.vlm.interpreter import Interpreter, VLMWorker, evidence_images
+from perception_lab.vlm.interpreter import Interpreter, VLMWorker, evidence_images, gate_pet
 from perception_lab.vlm.prompts import build_prompt, prompt_version
 from perception_lab.vlm.providers import (
     OllamaProvider,
@@ -272,3 +272,17 @@ def test_interpreter_asks_for_and_stores_the_pet():
     assert "Nube (cat)" in payload["messages"][0]["content"]
     assert result.interpretation["pet"] == "Negrita"
     assert result.interpretation["prompt_version"] == "pets_v1+pet"
+
+
+def test_gate_pet_keeps_supported_names_and_withholds_the_rest():
+    named = {**GOOD, "pet": "Nube", "certainty": "high"}
+    assert gate_pet(named, 0.8, 0.4) == (named, None)
+    low_score, why = gate_pet(named, 0.3, 0.4)
+    assert low_score["pet"] == "unknown" and low_score["pet_vlm"] == "Nube" and "0.30" in why
+    unsure, why = gate_pet({**named, "certainty": "low"}, 0.9, 0.4)
+    assert unsure["pet"] == "unknown" and "low" in why
+    no_score, why = gate_pet(named, None, 0.4)
+    assert no_score["pet"] == "unknown" and "no detector score" in why
+    assert gate_pet({**GOOD, "pet": "unknown"}, 0.1, 0.4)[1] is None
+    assert gate_pet(GOOD, 0.1, 0.4) == (GOOD, None)  # no pet asked
+    assert named["pet"] == "Nube"  # the input is not modified

@@ -11,7 +11,7 @@ from typing import Any
 
 from numpy.typing import NDArray
 
-from perception_lab.core.config import VLMConfig
+from perception_lab.core.config import UNKNOWN_PET, VLMConfig
 from perception_lab.events.evidence import BufferedFrame, crop, fit_max_side, montage
 from perception_lab.events.model import PetEvent
 from perception_lab.vlm.prompts import RETRY_SUFFIX, build_prompt, prompt_version
@@ -91,6 +91,29 @@ class Interpreter:
         return InterpretationResult(
             "failed", error=error, raw_text=(raw or "")[:2000], latency_s=total_latency, attempts=2
         )
+
+
+def gate_pet(
+    interpretation: dict[str, Any], detector_score: float | None, min_detector_score: float
+) -> tuple[dict[str, Any], str | None]:
+    """Keep a VLM pet name only when the detection and the VLM both support it.
+
+    Returns the interpretation (unchanged, or with ``pet`` set to ``"unknown"`` and the original
+    kept as ``pet_vlm``) and the reason when the name was withheld.
+    """
+    pet = interpretation.get("pet")
+    if pet is None or pet == UNKNOWN_PET:
+        return interpretation, None
+    reason = None
+    if detector_score is None:
+        reason = "no detector score for this event"
+    elif detector_score < min_detector_score:
+        reason = f"detector score {detector_score:.2f} below {min_detector_score:.2f}"
+    elif interpretation.get("certainty") == "low":
+        reason = "VLM certainty is low"
+    if reason is None:
+        return interpretation, None
+    return {**interpretation, "pet": UNKNOWN_PET, "pet_vlm": pet}, reason
 
 
 Job = tuple[PetEvent, list[NDArray], list[float]]

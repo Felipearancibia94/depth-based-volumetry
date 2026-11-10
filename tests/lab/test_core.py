@@ -62,6 +62,7 @@ def test_partial_config_keeps_defaults():
         ({"source": {"fps": "15"}}, "integer"),
         ({"vlm": {"enabled": 1}}, "true or false"),
         ({"vlm": {"num_ctx": 0}}, "positive"),
+        ({"vlm": {"pet_min_detector_score": 1.5}}, "between 0 and 1"),
         ({"vlm": {"pets": [{"name": "A", "species": "cat", "description": "x"}] * 2}}, "unique"),
         (
             {"vlm": {"pets": [{"name": "unknown", "species": "cat", "description": "x"}]}},

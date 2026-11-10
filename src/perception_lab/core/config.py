@@ -138,8 +138,14 @@ class VLMConfig:
     allow_remote: bool = False  # refuse non-loopback endpoints unless explicitly allowed
     # Household pets the VLM may name. Empty = the answer has no ``pet`` field.
     pets: tuple[PetConfig, ...] = ()
+    # A VLM pet name is kept only if the event's mean detector score reaches this value and the
+    # VLM's certainty is not "low"; otherwise it is stored as "unknown" (the raw answer is kept
+    # as ``pet_vlm``). Guards against naming a pet in a frame that holds none.
+    pet_min_detector_score: float = 0.4
 
     def __post_init__(self) -> None:
+        if not 0.0 <= self.pet_min_detector_score <= 1.0:
+            raise ConfigError("pet_min_detector_score must be between 0 and 1")
         if self.num_ctx < 1:
             raise ConfigError("num_ctx must be a positive number of tokens")
         names = [p.name for p in self.pets]

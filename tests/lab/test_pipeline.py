@@ -175,3 +175,34 @@ def test_webhook_refuses_remote_and_errors_do_not_propagate():
         [WebhookNotifier("http://127.0.0.1:9/hook", post=broken)], NotifyConfig()
     )
     assert policy.notify(PetEvent("e", "c", "r", "h", (1,), ("cat",), 0, 0, "t"))
+
+
+@pytest.mark.parametrize("min_score, expected", [(0.5, "Negrita"), (0.95, "unknown")])
+def test_pet_name_is_gated_on_the_detector_score(tmp_path, min_score, expected):
+    from perception_lab.core.config import PetConfig
+
+    def named(url, payload, timeout_s):
+        answer = json.loads(_vlm_reply("eating")["message"]["content"])
+        answer.update(certainty="high", pet="Negrita")
+        return {"message": {"content": json.dumps(answer)}}
+
+    cfg = _config(
+        tmp_path,
+        source=SourceConfig(fps=5, synthetic_seconds=40.0),
+        vlm=VLMConfig(
+            enabled=True,
+            max_requests_per_minute=60000,
+            pets=(PetConfig("Negrita", "cat", "a black cat"),),
+            pet_min_detector_score=min_score,
+        ),
+    )
+    app = build_app(cfg, vlm_post=named, vlm_async=False)
+    app.pipeline.run(app.frames())
+    event = next(e for e in app.store.all_events() if e.hypothesis == "eating")
+    assert event.observed_facts["detector_score_mean"] == pytest.approx(0.9)  # synthetic detector
+    assert event.pet == expected
+    assert event.event_id in {e.event_id for e in app.store.list(pet=expected, limit=500)}
+    if expected == "unknown":
+        assert event.interpretation["pet_vlm"] == "Negrita"
+        assert any("withheld" in u for u in event.uncertainty)
+    app.close()

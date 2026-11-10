@@ -36,6 +36,7 @@ from perception_lab.vlm.interpreter import (
     Interpreter,
     VLMWorker,
     evidence_images,
+    gate_pet,
 )
 
 _QUALITY_NOTES = {
@@ -207,6 +208,15 @@ class PetPipeline:
             observed_facts=dict(hit.facts),
             uncertainty=uncertainty,
         )
+        scores = [
+            o.score
+            for t in hit.track_ids
+            if t in self.histories
+            for o in self.histories[t].observations
+            if o.timestamp_s >= hit.started_s
+        ]
+        if scores:
+            event.observed_facts["detector_score_mean"] = round(sum(scores) / len(scores), 3)
         frames = select_frames(
             self.ring, hit.track_ids, hit.started_s, bundle.timestamp_s,
             self.config.storage.evidence_frames,
@@ -266,7 +276,16 @@ class PetPipeline:
                 return
             stored.interpretation_status = result.status
             if result.status == "done":
-                stored.interpretation = result.interpretation
+                interpretation, withheld = gate_pet(
+                    result.interpretation or {},
+                    stored.observed_facts.get("detector_score_mean"),
+                    self.config.vlm.pet_min_detector_score,
+                )
+                if withheld:
+                    stored.uncertainty.append(
+                        f"pet name '{interpretation['pet_vlm']}' withheld: {withheld}"
+                    )
+                stored.interpretation = interpretation
                 activity = (result.interpretation or {}).get("activity")
                 if activity == "unknown":
                     stored.uncertainty.append("the VLM could not identify the activity")
