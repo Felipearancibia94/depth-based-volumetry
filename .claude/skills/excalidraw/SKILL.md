@@ -1,6 +1,6 @@
 ---
 name: excalidraw
-description: Create or update an Excalidraw diagram in docs/diagrams (editable .excalidraw plus a PNG that renders on GitHub with the hand-drawn font). Use when asked for a diagram, an "excalidraw", a drawing of the roadmap, architecture, flow or pets, or when a change makes an existing generated diagram stale.
+description: Create or update an Excalidraw diagram in docs/diagrams (editable .excalidraw plus a PNG that renders on GitHub with the hand-drawn font). Use when asked for an "excalidraw", an overview, roadmap, hardware or model map, a free-form or visual diagram with colour, photos or doodles, or when a change makes an existing generated diagram stale. Formal flows, call sequences, state machines and schemas that live inside Markdown go to /mermaid.
 ---
 
 # Excalidraw diagrams
@@ -11,8 +11,6 @@ and docs embed; GitHub draws Excalidraw SVG text in a fallback font, so we ship 
 Specs use only the standard library through `scripts/excalidraw_lib.py`.
 
 Existing specs: `roadmap.py`, `home_perception_lab_overview.py`, `pet_identification.py`.
-`pet-monitoring-architecture.excalidraw` is hand-made and has no spec; leave it alone unless
-asked.
 
 ## 1. Content first
 

@@ -1,0 +1,31 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>checking…</title>
+<body>
+<div id="out" style="display:none"></div>
+<script type="module">
+// Parses and renders every diagram with a pinned Mermaid version, then posts the results.
+import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs';
+
+async function main() {
+  mermaid.initialize({ startOnLoad: false, securityLevel: 'strict' });
+  const blocks = await (await fetch('blocks')).json();
+  const out = document.getElementById('out');
+  const results = [];
+  for (const [i, b] of blocks.entries()) {
+    const r = { file: b.file, line: b.line, ok: true, type: '', message: '' };
+    try {
+      const parsed = await mermaid.parse(b.code);
+      r.type = parsed.diagramType;
+      await mermaid.render('check' + i, b.code, out);
+    } catch (e) {
+      r.ok = false;
+      r.message = String((e && e.message) || e).split('\n').slice(0, 4).join(' | ');
+    }
+    results.push(r);
+  }
+  const res = await fetch('result', { method: 'POST', body: JSON.stringify(results) });
+  document.title = `checked ${results.length}, failed ${results.filter(r => !r.ok).length} (${res.status})`;
+}
+main().catch(e => { document.title = 'ERR ' + e; });
+</script>
