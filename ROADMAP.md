@@ -5,7 +5,12 @@ Single place for current status and next steps. Statuses come from the code, the
 Update this file when a phase item changes state.
 
 A visual summary with the hardware and models is in
-[`docs/diagrams/home-perception-lab-overview.png`](docs/diagrams/home-perception-lab-overview.png).
+[`docs/diagrams/home-perception-lab-overview.png`](docs/diagrams/home-perception-lab-overview.png),
+and this roadmap as a diagram is in [`docs/diagrams/roadmap.png`](docs/diagrams/roadmap.png)
+(generated from [`docs/diagrams/src/roadmap.py`](docs/diagrams/src/roadmap.py) with the
+`/excalidraw` skill; rebuild it when a phase item changes state).
+
+![Roadmap](docs/diagrams/roadmap.png)
 
 Legend: done = implemented and covered by synthetic tests. Nothing below is validated on a
 real camera, detector or VLM unless it says so.
@@ -20,7 +25,7 @@ real camera, detector or VLM unless it says so.
 
 - Sources, detector, tracker, spatial facts, 7 rules, VLM interpreter, SQLite store,
   notifications, dashboard, evaluation and benchmarks, `lab` CLI.
-- Branch `feat/pet-activity-monitoring`; not pushed.
+- Branch `feat/pet-activity-monitoring`; pushed, no pull request yet.
 
 ## Phase 2: hardware validation: next
 
@@ -113,7 +118,7 @@ Run on the target machine and keep the outputs ([`docs/pet-monitoring.md`](docs/
 ## Later (not scheduled)
 
 - CI: `.github/workflows/ci.yml` runs ruff and pytest on Ubuntu and Windows (no GPU, camera
-  or network). Written but not yet run on GitHub; the branch is not pushed.
+  or network). Written; its result on GitHub has not been checked yet.
 - Per-animal baselines for `unusual_inactivity`; a trained per-pet detector if the VLM naming
   proves too weak (see ADR 0006).
 - Further applications from the plan: food/water station, interaction monitoring,
@@ -127,6 +132,6 @@ Run on the target machine and keep the outputs ([`docs/pet-monitoring.md`](docs/
 
 ## Open decisions
 
-- Whether to push `feat/pet-activity-monitoring` and open a PR.
+- Whether to open a PR for `feat/pet-activity-monitoring`.
 - Detector weights licence (Ultralytics weights are AGPL-3.0).
 - Translate the Spanish sections of the dated plan and the MVP report to English.
