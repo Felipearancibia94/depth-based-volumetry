@@ -443,7 +443,7 @@ are the two places discussed under known gaps.
 - A failing notifier is logged and skipped.
 - The dashboard answers 404 for an unknown event and 400 for a bad request.
 
-A feature view that follows one pet name through these steps, with photos and measured limits,
+A feature view that follows one pet name through these steps, with drawings of the animals and the measured limits,
 is [`pet-identification.png`](../diagrams/pet-identification.png).
 
 ## Implemented, measured, planned

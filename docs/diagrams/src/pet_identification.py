@@ -1,6 +1,6 @@
-"""How the lab names the pets. Photos are embedded from docs/gallery (owner-approved only)."""
+"""How the lab names the pets. Drawings only: no photos are embedded in this diagram."""
 
-from excalidraw_lib import GREEN, GREY, MUTED, ORANGE, RED, cat, dog
+from excalidraw_lib import GREEN, MUTED, ORANGE, RED, cat, dog
 
 OUTPUT = "docs/diagrams/pet-identification"
 SEED = 5000
@@ -43,19 +43,19 @@ def build(d, repo):
     for name, x in (("Negrita", 0), ("Nube", 640), ("Leia", 1280)):
         d.zone(f"card_{name}", x, 465, 620, 330, ("#f1f3f5", "#868e96"), opacity=60)
         d.label(f"n_{name}", x + 15, 475, name, 24)
-    d.image("ph_neg", repo / "docs/gallery/negrita.jpg", 15, 520, 1.6)
+    cat(d, "neg", 130, 650, 190, "#343a40", "#ffd43b")
     d.label("t_neg", 255, 530, "Prompt description:\na cat with a fully\nblack coat\n\n"
             "Named correctly:\n4 of 4 crops\n4 of 4 orientations", 15)  # fmt: skip
-    d.image("ph_nube", repo / "docs/gallery/nube.jpg", 655, 520, 1.1)
-    d.label("t_nube", 975, 520, "Prompt description:\na cat with a tricolor\ncoat (black, "
+    cat(d, "nube", 770, 650, 190, "#f59f00", "#2f9e44", patch="#1e1e1e")
+    d.ellipse("nube_white", 770 - 190 * 0.43, 650 - 190 * 0.30, 190 * 0.36, 190 * 0.26,
+              "#ffffff", stroke="#ffffff", stroke_width=1)  # fmt: skip
+    d.label("t_nube", 895, 520, "Prompt description:\na cat with a tricolor\ncoat (black, "
             "orange,\nwhite patches)\n\nNamed correctly:\n4 of 4 orientations", 15)  # fmt: skip
-    d.label("t_nube2", 655, 662, "As captured, the detector read her\nlying down as 'dog' "
-            "0.73 (model l);\nturned, as 'cat' 0.93. The photo is\nrotated to read upright.",
-            15, MUTED)  # fmt: skip
-    dog(d, "dg", 1390, 640, 170)
-    d.label("t_leia", 1500, 530, "Prompt description:\na dog\n(add coat, size,\nmarks)\n\n"
+    d.label("t_nube2", 895, 690, "As captured, the detector read her\nlying down as 'dog' "
+            "0.73 (model l);\nturned, as 'cat' 0.93.", 15, MUTED)  # fmt: skip
+    dog(d, "dg", 1410, 650, 190)
+    d.label("t_leia", 1535, 530, "Prompt description:\na dog\n(add coat, size,\nmarks)\n\n"
             "Not tested:\nno image of her yet", 15)  # fmt: skip
-    d.box("leia_note", 1295, 725, 300, 55, "no photo yet", GREY, 15, dashed=True)
 
     d.zone("z3", 0, 825, 1900, 160, RED, opacity=30)
     d.label(

@@ -143,7 +143,8 @@ output tokens per request.
 
 The path from a camera frame to a named pet, the three animals and the known limits are
 drawn in `docs/diagrams/pet-identification.png` (editable source:
-`docs/diagrams/pet-identification.excalidraw`, with the gallery photos embedded):
+`docs/diagrams/pet-identification.excalidraw`; the animals are drawings, the photos are in
+[`gallery/`](gallery/README.md)):
 
 ![From a camera frame to a named pet](diagrams/pet-identification.png)
 

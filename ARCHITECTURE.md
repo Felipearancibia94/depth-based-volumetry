@@ -41,7 +41,7 @@ Mermaid sources are `docs/diagrams/mermaid/*.mmd`, embedded between markers in t
 | 4 | `l4-vlm-status` | Mermaid | `interpretation_status` transitions | [lab.md](docs/architecture/lab.md) |
 | 4 | `l4-rule-event-states` | Mermaid | start, cooldown and release of an event | [lab.md](docs/architecture/lab.md) |
 | 4 | `l4-lab-runtime-threads` | Mermaid | threads, locks and where the frame loop blocks | [lab.md](docs/architecture/lab.md) |
-| feature | [pet identification](docs/diagrams/pet-identification.png) | Excalidraw | how a pet gets a name, with photos and limits | [pet-monitoring.md](docs/pet-monitoring.md#naming-the-household-pets) |
+| feature | [pet identification](docs/diagrams/pet-identification.png) | Excalidraw | how a pet gets a name, with drawings of the animals and the known limits | [pet-monitoring.md](docs/pet-monitoring.md#naming-the-household-pets) |
 | status | [roadmap](docs/diagrams/roadmap.png) | Excalidraw | phases and open items | [ROADMAP.md](ROADMAP.md) |
 
 ## Level 1: system
