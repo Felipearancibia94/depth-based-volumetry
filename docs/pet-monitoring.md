@@ -180,8 +180,24 @@ drawn in `docs/diagrams/pet-identification.png` (editable source:
 
 ![From a camera frame to a named pet](diagrams/pet-identification.png)
 
+Three safeguards follow from the failure below ([ADR 0006](adr/0006-pet-name-is-a-gated-interpretation.md)):
+
+- **Gate.** The event's mean detector score is stored as `observed_facts.detector_score_mean`.
+  The name is kept only if it reaches `vlm.pet_min_detector_score` (0.4 by default) and the
+  VLM's certainty is not `low`; otherwise `pet` becomes `unknown`, the raw answer stays in
+  `pet_vlm` and the reason is added to `uncertainty`. The threshold is a first guess, not tuned.
+- **Owner correction.** With pets configured, each event in the dashboard has a "correct pet"
+  selector. The correction is stored as `review_pet`, wins over the VLM and is what the `pet`
+  column, the filter and the summary use. Corrected events are the labels for measuring the
+  naming later.
+- **Filter and summary.** The dashboard filters events by pet (`/api/events?pet=`), and
+  `lab summary [--date YYYY-MM-DD]` (also `/api/summary` and the "Today per pet" block) counts
+  events and seconds per pet and activity from SQLite, saying how many activities came from
+  the VLM and how many from the rule alone. Names that were not asked for appear as `unnamed`.
+  An existing database gets the `pet` column on open.
+
 What was checked (2026-11-09, `qwen3-vl:2b-instruct`, saved crops, through the lab's own
-code): a black cat named correctly from four crops, a tricolor cat named correctly from one
+code, before the gate existed): a black cat named correctly from four crops, a tricolor cat named correctly from one
 crop, and a room with no animal named as a pet with certainty `high`. So the value can be wrong
 when the detection itself is wrong, and `certainty` does not warn about it; treat `pet` as a
 hint and keep the detector score next to it. A dog was not tested (no image), and the

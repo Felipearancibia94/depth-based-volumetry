@@ -85,6 +85,12 @@ Run on the target machine and keep the outputs ([`docs/pet-monitoring.md`](docs/
       on its side was "dog" 0.73 as captured (model l) and "cat" 0.93-0.97 when turned or
       flipped, while the black cat sitting upright dropped from 0.92 to 0.33-0.50 when upside
       down. Mount the camera upright and expect lying animals to be the weak case.
+- [x] **Pet-name safeguards (2026-11-09).** Gate on the detector score and the VLM's certainty,
+      owner correction in the dashboard, pet filter, `pet` column with migration, and
+      `lab summary`, all covered by synthetic tests (the gate is exercised end to end with the
+      synthetic detector, score 0.9). Not yet seen live: the threshold 0.4 is a guess and the
+      no-animal case was not re-run with the gate; both need the camera and labelled
+      corrections.
 - [ ] **Night.** The colour stream is almost black in the dark, so the detector sees nothing;
       the D435 has infrared streams, but no source or detector path uses them yet.
 - [ ] **Detector (multi-class YOLO-layout exports in five sizes, 640 input, synthetic frames, same PC).** CPU
@@ -108,7 +114,8 @@ Run on the target machine and keep the outputs ([`docs/pet-monitoring.md`](docs/
 
 - CI: `.github/workflows/ci.yml` runs ruff and pytest on Ubuntu and Windows (no GPU, camera
   or network). Written but not yet run on GitHub; the branch is not pushed.
-- Per-animal baselines for `unusual_inactivity`; per-pet identity.
+- Per-animal baselines for `unusual_inactivity`; a trained per-pet detector if the VLM naming
+  proves too weak (see ADR 0006).
 - Further applications from the plan: food/water station, interaction monitoring,
   occupancy heatmaps, smart-home hooks.
 - Gallery update: a command (opt-in, with the commit left to the owner) that copies the best
