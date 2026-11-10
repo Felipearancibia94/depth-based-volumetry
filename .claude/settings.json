@@ -10,6 +10,7 @@
       "Bash(uv sync *)",
       "Bash(uv run lab --help)",
       "Bash(uv run lab eval *)",
+      "Bash(uv run lab summary *)",
       "Bash(uv run lab run --frames *)",
       "Bash(git status *)",
       "Bash(git diff *)",

@@ -11,6 +11,11 @@ paths:
   gates an alert (ADR 0003).
 - Keep observed facts, rule hypothesis, VLM interpretation and uncertainty in separate fields.
   `unknown` is a valid VLM answer. Do not fill `confidence` with model-stated numbers.
+- A pet name (`interpretation.pet`, `review_pet`, the `pet` column) is an interpretation, never a
+  fact and never an input to a rule or alert (ADR 0006). Do not trust the VLM's certainty for it:
+  go through `gate_pet`. An owner correction is stored apart and wins in `PetEvent.pet`.
+- Changing the `events` table: add columns with a backfill in `EventStore` (see
+  `_add_pet_column`) so existing `data/*.db` files keep working, and test an old-schema database.
 - Missing or invalid depth gives `None` plus a quality flag. Say whether speeds and distances
   are in metres or body lengths.
 - Local only (ADR 0004): VLM, webhook and dashboard endpoints stay on loopback unless the

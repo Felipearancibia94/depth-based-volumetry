@@ -23,7 +23,7 @@ If a check fails:
   running the same test on a clean checkout with `git stash` only if the user agrees).
 
 If `uv` itself fails (for example Windows error 32, a locked cache directory) rather than the
-checks, retry once with a different cache: `UV_CACHE_DIR=<scratchpad>/uv-cache uv run pytest`.
+checks, retry once with a different cache (the project uses Python 3.11; see `.python-version`): `UV_CACHE_DIR=<scratchpad>/uv-cache uv run pytest`.
 If it still fails, report the uv error as-is and what was therefore not verified.
 
 For a CLI flag change also confirm the README table and the CLI test were updated

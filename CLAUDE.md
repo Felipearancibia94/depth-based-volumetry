@@ -32,7 +32,8 @@ Add dependencies with `uv add` / `uv add --dev` so `uv.lock` stays in sync. Neve
 - Do not clamp or silently substitute values: raise (`MeasurementError`, `CalibrationError`)
   or return `None` with a quality flag.
 - Keep dependencies minimal. RealSense stays an optional extra and a lazy import.
-- Python 3.11+. Code, comments and docs in English. Commits follow Conventional Commits.
+- Python 3.11+ (the pinned `pyrealsense2` has no wheel for 3.12+). Code, comments and docs in
+  English. Commits follow Conventional Commits.
 
 ## Workflow
 

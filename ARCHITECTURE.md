@@ -50,7 +50,7 @@ stored events on loopback.
 | `spatial/` | floor plane, zones, robust per-track depth facts |
 | `events/` | features, deterministic rules, event model, evidence ring buffer |
 | `vlm/` | strict JSON schema, versioned prompt, providers, async worker |
-| `store/` | SQLite history, evidence JPEGs, retention |
+| `store/` | SQLite history (with a `pet` column, owner corrections and a daily per-pet summary), evidence JPEGs, retention |
 | `notify/`, `web/` | notifications and the standard-library dashboard |
 | `eval/` | labels, metrics, repeatable runs, on-machine benchmarks |
 | `apps/pets/` | wiring of the above into `PetPipeline` |
@@ -58,6 +58,8 @@ stored events on loopback.
 ## Invariants
 
 - Alerts come from deterministic rules and never wait for the VLM ([ADR 0003](docs/adr/0003-rules-decide-vlm-describes.md)).
+- A pet name is the VLM's interpretation, gated on the detector score and correctable by the owner;
+  it never drives a rule ([ADR 0006](docs/adr/0006-pet-name-is-a-gated-interpretation.md)).
 - Measurement and decode functions are pure; I/O lives in `io.py`, `cli.py`, the model wrapper
   and the lab's `sources/`, `store/`, `web/`, `notify/`.
 - The lab is local only; the runtime uses the standard library ([ADR 0002](docs/adr/0002-stdlib-only-lab-runtime.md),
