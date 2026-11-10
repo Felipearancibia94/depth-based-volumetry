@@ -14,3 +14,6 @@ paths:
   run on that hardware or model; mark such figures as measured, with the date and machine.
 - README CLI tables must match the argparse definitions in `cli.py` for both packages.
 - New architectural decisions get an ADR (`docs/adr/`), listed in its README.
+- Diagrams in `docs/diagrams/` with a spec in `docs/diagrams/src/` are generated: edit the
+  spec and rebuild with `/excalidraw`, never the `.excalidraw` or `.png` by hand. When a
+  `ROADMAP.md` status changes, rebuild `roadmap.py` in the same change.

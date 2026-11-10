@@ -1,0 +1,78 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>rendering…</title>
+<body style="margin:0;background:#fff">
+<canvas id="c"></canvas>
+<script>
+// Draws a subset of Excalidraw (rectangle, ellipse, line, arrow, image, text) with clean
+// strokes and the Virgil font, then posts the PNG to the server. Title shows the result.
+const SCALE = 2, PAD = 30;
+const FONT = 'https://cdn.jsdelivr.net/npm/@excalidraw/excalidraw@0.17.6/dist/excalidraw-assets/Virgil.woff2';
+const loadImg = u => new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = u; });
+
+async function main() {
+  const doc = await (await fetch('doc')).json();
+  try { const f = new FontFace('Virgil', `url(${FONT})`); await f.load(); document.fonts.add(f); }
+  catch (e) { console.warn('Virgil font not loaded, using sans-serif', e); }
+  const els = doc.elements.filter(e => !e.isDeleted), byId = {};
+  els.forEach(e => byId[e.id] = e);
+  const imgs = {};
+  for (const [k, v] of Object.entries(doc.files || {})) imgs[k] = await loadImg(v.dataURL);
+
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  const grow = (x, y) => { minX = Math.min(minX, x); minY = Math.min(minY, y); maxX = Math.max(maxX, x); maxY = Math.max(maxY, y); };
+  els.forEach(e => {
+    if (e.points) e.points.forEach(p => grow(e.x + p[0], e.y + p[1]));
+    else { grow(e.x, e.y); grow(e.x + e.width, e.y + e.height); }
+  });
+  const c = document.getElementById('c');
+  c.width = (maxX - minX + 2 * PAD) * SCALE; c.height = (maxY - minY + 2 * PAD) * SCALE;
+  const g = c.getContext('2d');
+  g.scale(SCALE, SCALE); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height);
+  g.translate(PAD - minX, PAD - minY); g.lineJoin = 'round'; g.lineCap = 'round';
+
+  const dash = e => g.setLineDash(e.strokeStyle === 'dashed' ? [8, 6] : e.strokeStyle === 'dotted' ? [2, 5] : []);
+  const fillStroke = e => {
+    if (e.backgroundColor && e.backgroundColor !== 'transparent') { g.fillStyle = e.backgroundColor; g.fill(); }
+    if (e.strokeColor !== 'transparent') { g.strokeStyle = e.strokeColor; g.lineWidth = e.strokeWidth; dash(e); g.stroke(); g.setLineDash([]); }
+  };
+  const rr = (x, y, w, h, r) => { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); };
+
+  for (const e of els) {
+    g.globalAlpha = (e.opacity ?? 100) / 100;
+    if (e.type === 'rectangle') { rr(e.x, e.y, e.width, e.height, e.roundness ? Math.min(12, e.width / 4, e.height / 4) : 0); fillStroke(e); }
+    else if (e.type === 'ellipse') { g.beginPath(); g.ellipse(e.x + e.width / 2, e.y + e.height / 2, e.width / 2, e.height / 2, 0, 0, 2 * Math.PI); fillStroke(e); }
+    else if (e.type === 'line') {
+      g.beginPath(); e.points.forEach((p, i) => i ? g.lineTo(e.x + p[0], e.y + p[1]) : g.moveTo(e.x + p[0], e.y + p[1]));
+      if (e.polygon) g.closePath();
+      fillStroke(e.polygon ? e : { ...e, backgroundColor: 'transparent' });
+    }
+    else if (e.type === 'image' && imgs[e.fileId]) g.drawImage(imgs[e.fileId], e.x, e.y, e.width, e.height);
+    else if (e.type === 'arrow') {
+      const P = e.points.map(p => [e.x + p[0], e.y + p[1]]), n = P.length;
+      g.strokeStyle = e.strokeColor; g.fillStyle = e.strokeColor; g.lineWidth = e.strokeWidth; dash(e);
+      g.beginPath(); g.moveTo(...P[0]); P.slice(1).forEach(p => g.lineTo(...p)); g.stroke(); g.setLineDash([]);
+      if (e.endArrowhead) {
+        const [x1, y1] = P[n - 2], [x2, y2] = P[n - 1], a = Math.atan2(y2 - y1, x2 - x1);
+        g.beginPath(); g.moveTo(x2, y2); g.lineTo(x2 - 12 * Math.cos(a - 0.4), y2 - 12 * Math.sin(a - 0.4));
+        g.lineTo(x2 - 12 * Math.cos(a + 0.4), y2 - 12 * Math.sin(a + 0.4)); g.closePath(); g.fill();
+      }
+    }
+  }
+  g.globalAlpha = 1;
+  for (const e of els.filter(e => e.type === 'text')) {
+    g.globalAlpha = (e.opacity ?? 100) / 100;
+    g.fillStyle = e.strokeColor; g.font = `${e.fontSize}px Virgil, sans-serif`; g.textBaseline = 'top';
+    const lh = e.fontSize * (e.lineHeight || 1.25);
+    e.text.split('\n').forEach((line, i) => {
+      let x = e.x;
+      const box = e.containerId && byId[e.containerId];
+      if (box && e.textAlign === 'center') x = box.x + (box.width - g.measureText(line).width) / 2;
+      g.fillText(line, x, e.y + i * lh);
+    });
+  }
+  const r = await fetch('save', { method: 'POST', body: c.toDataURL('image/png') });
+  document.title = `saved ${r.status} ${c.width}x${c.height}`;
+}
+main().catch(e => { document.title = 'ERR ' + e; });
+</script>

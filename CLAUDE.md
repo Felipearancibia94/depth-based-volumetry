@@ -43,7 +43,8 @@ Add dependencies with `uv add` / `uv add --dev` so `uv.lock` stays in sync. Neve
 4. Before saying a change is done, run `/verify` (pytest, ruff check, ruff format --check)
    and report the actual results, including failures.
 5. When behaviour, a CLI flag or status changes, update README, the relevant doc and
-   `ROADMAP.md` in the same change (`/cli-change` for flags).
+   `ROADMAP.md` in the same change (`/cli-change` for flags, `/excalidraw` to rebuild the
+   generated diagrams in `docs/diagrams/`).
 
 ## Hard constraints
 
